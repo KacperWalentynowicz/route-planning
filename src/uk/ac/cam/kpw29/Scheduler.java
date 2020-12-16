@@ -51,5 +51,14 @@ public class Scheduler {
         }
     }
 
-
+    public void finishRunners() {
+        for (TaskRunner tr : runners) {
+            tr.requireFinish();
+            try {
+                tr.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
