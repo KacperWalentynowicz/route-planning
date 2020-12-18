@@ -45,7 +45,7 @@ public class Scheduler {
         }
     }
 
-    public void startRunners(Phase p) {
+    public void startRunners() {
         for (TaskRunner tr : runners) {
             tr.start();
         }

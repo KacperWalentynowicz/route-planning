@@ -5,9 +5,11 @@ import java.util.List;
 
 public class Message {
     private List<Object> contents;
+    private float timeSend;
 
     public Message() {
         contents = new ArrayList<>();
+        timeSend = 0.0f;
     }
 
     public void addObject(Object o) {
@@ -21,4 +23,10 @@ public class Message {
     public List<Object> getContents() {
         return contents;
     }
+
+    public void setTimeSend(float f) {
+        timeSend = f;
+    }
+
+    public float getTimeSend(){ return timeSend; }
 }

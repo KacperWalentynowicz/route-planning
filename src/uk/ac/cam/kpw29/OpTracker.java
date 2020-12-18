@@ -2,20 +2,42 @@ package uk.ac.cam.kpw29;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import static java.lang.Math.max;
 
 public class OpTracker {
-    private Map<Operation, Float> operations;
+    private EvaluationEnvironment env;
     private TimeEstimator estimator;
+    private ConcurrentMap <Core, Float> timeOnCores;
 
-    public OpTracker(TimeEstimator t) {
-        operations = new HashMap<>();
+    public OpTracker(EvaluationEnvironment env, TimeEstimator estimator) {
+        this.env = env;
+        this.estimator = estimator;
+        timeOnCores = new ConcurrentHashMap<>();
+        for (Core c : env.getCores()) {
+            timeOnCores.put(c, 0.0f);
+        }
     }
 
-    public synchronized void track(Operation op) {
-        Float time = operations.getOrDefault(op, 0.0f);
-        operations.put(op, estimator.estimateTimeOp(op));
+    public float getTime(Core core) {
+        return timeOnCores.get(core);
     }
-    public synchronized float estimateTime() {
-        return estimator.estimateTime(operations);
+
+    public void trackALU(Core core) {
+        timeOnCores.compute(core, (key, value) -> value + estimator.getALUTime(core));
+    }
+
+    public void trackSend(Core from, Message m) {
+        timeOnCores.compute(from, (key, value) -> value + estimator.getPackageTime(from, m));
+    }
+
+    public void trackReceive(Core from, Core at, Message m) {
+        float t_available = m.getTimeSend() + estimator.getJourneyTime(from, at);
+        //the message is not available earlier than this time, but it may be already waiting at this core
+
+        float t_ready = max(t_available, timeOnCores.get(at)) + estimator.getUnPackageTime(at, m);
+        timeOnCores.put(at, t_ready);
     }
 }

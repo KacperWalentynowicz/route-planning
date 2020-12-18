@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class CommunicationHandler {
     ConcurrentMap <Pair<Core, Core>, SingleConnectionHandler> connections;
+    ProcessorArchitecture proc;
 
     private void initMap(ProcessorArchitecture proc) {
         connections = new ConcurrentHashMap<>();
@@ -20,7 +21,12 @@ public class CommunicationHandler {
         }
     }
     public CommunicationHandler(ProcessorArchitecture proc) {
+        this.proc = proc;
         initMap(proc);
+    }
+
+    public float getDistance(Core from, Core to) {
+        return proc.getDistance(from, to);
     }
 
     void sendMessage(Core from, Core to, Message m) {
