@@ -92,6 +92,24 @@ public class Core {
         dest %= a;
     }
 
+    public void min(Float dest, float a, float b) {
+        tracker.trackALU(this);
+        dest = Math.min(a, b);
+    }
+    public void min(Float dest, float a) {
+        tracker.trackALU(this);
+        dest = Math.min(dest, a);
+    }
+
+    public void max(Float dest, float a, float b) {
+        tracker.trackALU(this);
+        dest = Math.max(a, b);
+    }
+    public void max(Float dest, float a) {
+        tracker.trackALU(this);
+        dest = Math.max(dest, a);
+    }
+
     public void sendData(Core to, Message m) {
         m.setTimeSend(getCurrentTime());
         tracker.trackSend(this, m);
@@ -104,5 +122,5 @@ public class Core {
         return m;
     }
 
-    // TODO: add global array / set / queue read/writes
+    // TODO: add global array / set / queue reads/writes? Perhaps not?
 }
