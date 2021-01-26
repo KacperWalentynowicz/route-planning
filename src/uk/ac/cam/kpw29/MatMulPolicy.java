@@ -1,4 +1,5 @@
 package uk.ac.cam.kpw29;
 
-public class MatMulPolicy {
+public abstract class MatMulPolicy {
+    public abstract double multMin(Matrix res, Matrix a, Matrix b);
 }
