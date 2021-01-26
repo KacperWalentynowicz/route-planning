@@ -1,7 +1,5 @@
 package uk.ac.cam.kpw29;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.util.ArrayList;
 
 public class Core {
@@ -11,10 +9,10 @@ public class Core {
     private ArrayList<Core> neighbors;
     private EvaluationEnvironment env;
 
-    public Core(EvaluationEnvironment env, int coreID, OpTracker tracker) {
+    public Core(EvaluationEnvironment env, int coreID) {
         this.env = env;
         this.coreID = coreID;
-        this.tracker = tracker;
+        this.tracker = env.getTracker();
     }
 
     public int getCoreID() {
@@ -120,6 +118,18 @@ public class Core {
         Message m = env.getCommunicationHandler().receiveMessage(from, this);
         tracker.trackReceive(from, this, m);
         return m;
+    }
+
+    public void simpleMultMin(Matrix res, Matrix a, Matrix b) {
+        for (int i = 0; i < a.N; ++i) {
+            for (int k = 0; k < a.N; ++k) {
+                for (int j = 0; j < b.N; ++j) {
+                    Float path_cand = 0.0f;
+                    this.add(path_cand, a.data[i][k], b.data[k][j]);
+                    this.min(res.data[i][j], path_cand);
+                }
+            }
+        }
     }
 
     // TODO: add global array / set / queue reads/writes? Perhaps not?

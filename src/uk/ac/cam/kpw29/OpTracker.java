@@ -8,17 +8,35 @@ import java.util.concurrent.ConcurrentMap;
 import static java.lang.Math.max;
 
 public class OpTracker {
-    private EvaluationEnvironment env;
-    private TimeEstimator estimator;
+    private final EvaluationEnvironment env;
+    private final TimeEstimator estimator;
     private ConcurrentMap <Core, Float> timeOnCores;
 
-    public OpTracker(EvaluationEnvironment env, TimeEstimator estimator) {
+
+    public OpTracker(EvaluationEnvironment env) {
         this.env = env;
-        this.estimator = estimator;
+        this.estimator = env.getTimeEstimator();
+        resetTime(0.0f);
+    }
+
+    public void resetTime(float value) {
         timeOnCores = new ConcurrentHashMap<>();
         for (Core c : env.getCores()) {
-            timeOnCores.put(c, 0.0f);
+            timeOnCores.put(c, value);
         }
+    }
+
+    public void synchronizeAfterPhase() {
+        float MaxValue = getTotalTime();
+        resetTime(MaxValue);
+    }
+
+    public float getTotalTime() {
+        float result = Float.MAX_VALUE;
+        for (Core core : env.getCores()) {
+            result = max(result, this.getTime(core));
+        }
+        return result;
     }
 
     public float getTime(Core core) {

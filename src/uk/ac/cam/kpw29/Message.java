@@ -4,11 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Message {
-    private List<Object> contents;
+    private ArrayList<Object> contents;
     private float timeSend;
 
     public Message() {
         contents = new ArrayList<>();
+        timeSend = 0.0f;
+    }
+
+    public Message(Object o) {
+        contents = new ArrayList<>();
+        contents.add(o);
         timeSend = 0.0f;
     }
 
@@ -20,7 +26,7 @@ public class Message {
         return contents.size();
     }
 
-    public List<Object> getContents() {
+    public ArrayList<Object> getContents() {
         return contents;
     }
 

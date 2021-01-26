@@ -10,12 +10,8 @@ public class Scheduler {
     private final AtomicInteger threads_running; //number of runners which are currently doing their job
 
     public Scheduler(int N_THREADS) {
-        threads_running = new AtomicInteger();
+        threads_running = new AtomicInteger(0);
         this.N_THREADS = N_THREADS;
-        runners = new ArrayList<>();
-        for (int i=0; i<N_THREADS; ++i) {
-            runners.add(new TaskRunner(threads_running));
-        }
     }
 
     public void incrementRunningThreads() {
@@ -28,7 +24,7 @@ public class Scheduler {
         return threads_running.get();
     }
 
-    private void runPhase(Phase p) {
+    public void runPhase(Phase p) {
         if (getRunningThreads() != 0) {
             throw new IllegalThreadStateException("Trying to subscribe a running thread into a different Phase. Error in the algorithm!");
         }
@@ -46,6 +42,15 @@ public class Scheduler {
     }
 
     public void startRunners() {
+        if (threads_running.get() != 0) {
+            throw new RuntimeException("Trying to restart threads while something is running. Error.");
+        }
+
+        runners = new ArrayList<>();
+        for (int i=0; i<N_THREADS; ++i) {
+            runners.add(new TaskRunner(threads_running));
+        }
+
         for (TaskRunner tr : runners) {
             tr.start();
         }

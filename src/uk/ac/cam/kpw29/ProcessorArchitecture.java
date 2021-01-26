@@ -11,12 +11,15 @@ public class ProcessorArchitecture {
     private int N_CORES;
     private Map <Pair<Core, Core>, Float> dist;
     private List<Core> cores;
+    private EvaluationEnvironment env;
 
-    public ProcessorArchitecture(int N_CORES) {
+    public ProcessorArchitecture(EvaluationEnvironment env, int N_CORES) {
+        this.env = env;
         N_CORES = N_CORES;
         graph = new HashMap<>();
         dist = new HashMap<>();
         cores = new ArrayList<>();
+        this.calculateDistances();
     }
 
     private void addUniconnection(Core i, Core j) {
@@ -40,10 +43,13 @@ public class ProcessorArchitecture {
         return cores;
     }
 
+    public Core getCore(int coreID) {
+        return cores.get(coreID);
+    }
+
     public ArrayList<Core> getNeighbors(Core c) {
         return graph.get(c);
     }
-
     public void calculateDistances() {
         // simple BFS approach
         for (Core start : cores) {
