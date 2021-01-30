@@ -10,7 +10,6 @@ import static java.lang.Math.min;
 import static java.lang.Math.sqrt;
 
 public class Lattice extends ProcessorArchitecture {
-    int N_CORES;
     int N_ROW;
     private MasterCore master;
 
@@ -74,24 +73,24 @@ public class Lattice extends ProcessorArchitecture {
 
     private void setupConnections() {
         // add connections to master core
-        for (int i=0; i<N_CORES; ++i) {
-            for (int j = 0; j + 1 < N_CORES; ++j) {
+        for (int i=0; i<N_ROW; ++i) {
+            for (int j = 0; j + 1 < N_ROW; ++j) {
                 int myID = getID(i, j);
                 addConnection(getCore(myID), master);
             }
         }
 
         // adding east-west connections
-        for (int i=0; i<N_CORES; ++i) {
-            for (int j=0; j+1<N_CORES; ++j) {
+        for (int i=0; i<N_ROW; ++i) {
+            for (int j=0; j+1<N_ROW; ++j) {
                 int myID = getID(i, j);
                 addConnection(getCore(myID), getEasternNeighbor(i, j));
             }
         }
 
         // adding north-south connections
-        for (int i=0; i+1<N_CORES; ++i) {
-            for (int j=0; j<N_CORES; ++j) {
+        for (int i=0; i+1<N_ROW; ++i) {
+            for (int j=0; j<N_ROW; ++j) {
                 int myID = getID(i, j);
                 addConnection(getCore(myID), getSouthernNeighbor(i, j));
             }
@@ -111,7 +110,6 @@ public class Lattice extends ProcessorArchitecture {
 
         master = new MasterCore(env, N_CORES);
         addCore(master);
-
         setupConnections();
     }
 }

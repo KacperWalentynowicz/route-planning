@@ -34,7 +34,7 @@ public class CannonMatMul extends MatMulPolicy{
                         new_mx.data[i][j] = m.data[i][j];
                     }
                     else {
-                        new_mx.data[i][j] = Float.MAX_VALUE;
+                        new_mx.data[i][j] = 1e9f;
                     }
                 }
             }
@@ -46,20 +46,23 @@ public class CannonMatMul extends MatMulPolicy{
     }
 
     @Override
-    public double multMin(Matrix res, Matrix a, Matrix b) {
+    public double multMin(Matrix res, Matrix m1, Matrix m2) {
         MasterCore master = proc.getMaster();
+        Matrix tmp = res.subMatrix(0, 0, res.N);
+        Matrix a = m1.subMatrix(0, 0, res.N);
+        Matrix b = m2.subMatrix(0, 0, res.N);
 
-        res = adapt(res); a = adapt(a); b = adapt(b);
-
+        tmp = adapt(tmp); a = adapt(m1); b = adapt(m2);
         master.setParallelMode(true);
-        int BLOCK_SIZE = res.N / proc.N_ROW;
+        int BLOCK_SIZE = tmp.N / proc.N_ROW;
+
         for (int i=0; i<proc.N_ROW; ++i) {
             for (int j=0; j<proc.N_ROW; ++j) {
                 Message setupMsg = new Message();
                 int k = (i + j) % proc.N_ROW;
                 setupMsg.addObject(a.subMatrix(i * BLOCK_SIZE, k * BLOCK_SIZE, BLOCK_SIZE));
                 setupMsg.addObject(b.subMatrix(k * BLOCK_SIZE, j * BLOCK_SIZE, BLOCK_SIZE));
-                setupMsg.addObject(res.subMatrix(i * BLOCK_SIZE, j * BLOCK_SIZE, BLOCK_SIZE));
+                setupMsg.addObject(tmp.subMatrix(i * BLOCK_SIZE, j * BLOCK_SIZE, BLOCK_SIZE));
                 setupMsg.addObject(i);
                 setupMsg.addObject(j);
 
@@ -89,7 +92,7 @@ public class CannonMatMul extends MatMulPolicy{
         }
         env.runPhase(init);
 
-        for (int phase=1; phase <= proc.N_CORES; ++phase) {
+        for (int phase=1; phase <= proc.N_ROW; ++phase) {
             Phase send = new Phase("Compute & Send", phase);
             // add sending tasks
             for (int i=0; i<proc.N_CORES; ++i) {
@@ -131,7 +134,30 @@ public class CannonMatMul extends MatMulPolicy{
             env.runPhase(recv);
         }
 
+        Phase finish = new Phase("Finish", 0);
+        for (int i=0; i<proc.N_CORES; ++i) {
+            CannonCore myCore = (CannonCore) proc.getCore(i);
+            Task finish_core = new Task(myCore) {
+                @Override
+                public void execute() {
+                    myCore.sendData(master, new Message(myCore.c));
+                }
+            };
 
+            finish.addTask(finish_core);
+        }
+        env.runPhase(finish);
+
+        for (int i=0; i<proc.N_ROW; ++i) {
+            for (int j=0; j<proc.N_ROW; ++j) {
+                Core c = proc.getCore(proc.getID(i, j));
+                Message resultMsg = master.receiveData(c);
+                Matrix resultMatrix = (Matrix)resultMsg.getContents().get(0);
+                tmp.assign(i * BLOCK_SIZE, j * BLOCK_SIZE, resultMatrix, BLOCK_SIZE);
+            }
+        }
+
+        res.assign(0, 0, tmp, res.N);
         return env.getTracker().getTotalTime();
     }
 }

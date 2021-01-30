@@ -13,6 +13,7 @@ public class Core {
         this.env = env;
         this.coreID = coreID;
         this.tracker = env.getTracker();
+        neighbors = new ArrayList<>();
     }
 
     public int getCoreID() {
@@ -40,72 +41,35 @@ public class Core {
     // Either dest := a op b
     // or dest := dest op a, depending on the number of arguments used
 
-    public void add(Float dest, float a, float b) {
+    public float add(float a, float b) {
         tracker.trackALU(this);
-        dest = a + b;
+        return a + b;
     }
 
-    public void add(Float dest, float a) {
+    public float sub(float a, float b) {
         tracker.trackALU(this);
-        dest += a;
+        return a-b;
     }
 
-    public void sub(Float dest, float a, float b) {
+    public float mul(float a, float b) {
         tracker.trackALU(this);
-        dest = a - b;
+        return a * b;
     }
 
-    public void sub(Float dest, float a) {
+
+    public float div(float a, float b) {
         tracker.trackALU(this);
-        dest -= a;
+        return a / b;
     }
 
-    public void mul(Float dest, float a, float b) {
+    public float min(float a, float b) {
         tracker.trackALU(this);
-        dest = a * b;
+        return Math.min(a, b);
     }
 
-    public void mul(Float dest, float a) {
+    public float max(float a, float b) {
         tracker.trackALU(this);
-        dest *= a;
-    }
-
-    public void div(Float dest, float a, float b) {
-        tracker.trackALU(this);
-        dest = a / b;
-    }
-
-    public void div(Float dest, float a) {
-        tracker.trackALU(this);
-        dest /= a;
-    }
-
-    public void mod(Float dest, float a, float b) {
-        tracker.trackALU(this);
-        dest = a % b;
-    }
-
-    public void mod(Float dest, float a) {
-        tracker.trackALU(this);
-        dest %= a;
-    }
-
-    public void min(Float dest, float a, float b) {
-        tracker.trackALU(this);
-        dest = Math.min(a, b);
-    }
-    public void min(Float dest, float a) {
-        tracker.trackALU(this);
-        dest = Math.min(dest, a);
-    }
-
-    public void max(Float dest, float a, float b) {
-        tracker.trackALU(this);
-        dest = Math.max(a, b);
-    }
-    public void max(Float dest, float a) {
-        tracker.trackALU(this);
-        dest = Math.max(dest, a);
+        return Math.max(a, b);
     }
 
     public void sendData(Core to, Message m) {
@@ -124,9 +88,8 @@ public class Core {
         for (int i = 0; i < a.N; ++i) {
             for (int k = 0; k < a.N; ++k) {
                 for (int j = 0; j < b.N; ++j) {
-                    Float path_cand = 0.0f;
-                    this.add(path_cand, a.data[i][k], b.data[k][j]);
-                    this.min(res.data[i][j], path_cand);
+                    float path_cand = this.add(a.data[i][k], b.data[k][j]);
+                    res.data[i][j] = this.min(res.data[i][j], path_cand);
                 }
             }
         }

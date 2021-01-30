@@ -8,14 +8,14 @@ import java.util.concurrent.ConcurrentMap;
 
 public class ProcessorArchitecture {
     private Map <Core, ArrayList<Core> > graph;
-    private int N_CORES;
+    protected int N_CORES;
     private Map <Pair<Core, Core>, Float> dist;
     private List<Core> cores;
     private EvaluationEnvironment env;
 
     public ProcessorArchitecture(EvaluationEnvironment env, int N_CORES) {
         this.env = env;
-        N_CORES = N_CORES;
+        this.N_CORES = N_CORES;
         graph = new HashMap<>();
         dist = new HashMap<>();
         cores = new ArrayList<>();

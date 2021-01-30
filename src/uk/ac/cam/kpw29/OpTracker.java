@@ -16,10 +16,9 @@ public class OpTracker {
     public OpTracker(EvaluationEnvironment env) {
         this.env = env;
         this.estimator = env.getTimeEstimator();
-        resetTime(0.0f);
     }
 
-    public void resetTime(float value) {
+    public void reset(float value) {
         timeOnCores = new ConcurrentHashMap<>();
         for (Core c : env.getCores()) {
             timeOnCores.put(c, value);
@@ -28,7 +27,7 @@ public class OpTracker {
 
     public void synchronizeAfterPhase() {
         float MaxValue = getTotalTime();
-        resetTime(MaxValue);
+        reset(MaxValue);
     }
 
     public float getTotalTime() {

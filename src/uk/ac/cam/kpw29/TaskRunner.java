@@ -12,7 +12,7 @@ public class TaskRunner extends Thread {
         this.runningThreads = runningThreads;
         runningPhase = null;
         isRunning = false;
-        requiredFinish = true;
+        requiredFinish = false;
     }
 
     public boolean isRunning() {
@@ -27,20 +27,25 @@ public class TaskRunner extends Thread {
         if (this.isRunning()) {
             throw new IllegalThreadStateException("Trying to subscribe a running thread into a different Phase. Error in the algorithm!");
         }
-        isRunning = true;
+
         runningThreads.getAndIncrement();
         runningPhase = p;
+        isRunning = true;
     }
 
     @Override
     public void run() {
         while (!requiredFinish) {
+            if (!isRunning) continue;
+
             Task t = runningPhase.getTask();
             if (t == null) { //this phase has ended! better wait for another subscription
                 isRunning = false;
-                runningThreads.getAndDecrement();
-                if (runningThreads.get() == 0) {
-                    runningThreads.notifyAll();
+                synchronized (runningThreads) {
+                    runningThreads.getAndDecrement();
+                    if (runningThreads.get() == 0) {
+                        runningThreads.notifyAll();
+                    }
                 }
             }
             else {

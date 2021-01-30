@@ -1,16 +1,17 @@
 package uk.ac.cam.kpw29;
 
+import java.sql.Time;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class EvaluationEnvironment {
-    private final ProcessorArchitecture proc;
+    private ProcessorArchitecture proc;
     private final Scheduler scheduler;
-    private final CommunicationHandler comm;
+    private CommunicationHandler comm;
     private ConcurrentMap <Core, Boolean> parallelModes;
-    private final TimeEstimator estimator;
-    private final OpTracker tracker;
+    private TimeEstimator estimator;
+    private OpTracker tracker;
 
     public void startEvaluation() {
         scheduler.startRunners();
@@ -27,6 +28,24 @@ public class EvaluationEnvironment {
         scheduler = new Scheduler(N_THREADS);
         comm = new CommunicationHandler(proc);
         parallelModes = new ConcurrentHashMap<>();
+    }
+
+    public EvaluationEnvironment(int N_THREADS) {
+        scheduler = new Scheduler(N_THREADS);
+        parallelModes = new ConcurrentHashMap<>();
+    }
+
+    public void attachProc(ProcessorArchitecture proc) {
+        this.proc = proc;
+        comm = new CommunicationHandler(proc);
+    }
+
+    public void attachEstimator(TimeEstimator estimator) {
+        this.estimator = estimator;
+    }
+
+    public void attachTracker(OpTracker tracker) {
+        this.tracker = tracker;
     }
 
     public Scheduler getScheduler() {
@@ -55,6 +74,9 @@ public class EvaluationEnvironment {
         return parallelModes.getOrDefault(core, false);
     }
 
+    public void setEstimator(TimeEstimator t) {
+        this.estimator = estimator;
+    }
     public void runPhase(Phase phase) {
         scheduler.runPhase(phase);
         tracker.synchronizeAfterPhase();

@@ -21,7 +21,8 @@ public class MatMulAlgorithm {
             time_taken += policy.multMin(distances, distances, distances);
         }
 
+
         env.finishEvaluation();
-        return distances;
+        return distances.subMatrix(0, 0, g.N);
     }
 }

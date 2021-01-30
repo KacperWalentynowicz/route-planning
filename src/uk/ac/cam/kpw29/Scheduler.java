@@ -33,11 +33,13 @@ public class Scheduler {
             runners.get(i).subscribe(p);
         }
 
-        try {
-            threads_running.wait();
-        } catch (InterruptedException e) {
-            // all runners finished work! the Phase is finished! :)
-            return;
+        synchronized (threads_running){
+            try {
+                threads_running.wait();
+            } catch (InterruptedException e) {
+                // all runners finished work! the Phase is finished! :)
+                return;
+            }
         }
     }
 
