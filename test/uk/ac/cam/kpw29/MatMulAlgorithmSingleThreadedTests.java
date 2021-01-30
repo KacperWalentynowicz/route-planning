@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 
-public class MatMulAlgorithmMultiThreadedTests{
+public class MatMulAlgorithmSingleThreadedTests{
     private EvaluationEnvironment env;
     private Lattice proc;
     private OpTracker tracker;
@@ -17,7 +17,7 @@ public class MatMulAlgorithmMultiThreadedTests{
     public void setUp() {
         // DO NOT CHANGE SETUP ORDER
 
-        this.env = new EvaluationEnvironment(8);
+        this.env = new EvaluationEnvironment(1);
 
         this.estimator = new TimeEstimator(env);
         env.attachEstimator(estimator);
