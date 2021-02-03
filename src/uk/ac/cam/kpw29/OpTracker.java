@@ -46,6 +46,11 @@ public class OpTracker {
         timeOnCores.compute(core, (key, value) -> value + estimator.getMemTime(core));
     }
 
+    // TODO: change this into behaviour different than trackMem
+    public void trackSharedMem(Core core) {
+        timeOnCores.compute(core, (key, value) -> value + estimator.getMemTime(core));
+    }
+
     public void trackPQOperation(Core core) {
         timeOnCores.compute(core, (key, value) -> value + estimator.getPQTime(core));
     }
