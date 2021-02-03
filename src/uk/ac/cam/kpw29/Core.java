@@ -41,6 +41,10 @@ public class Core {
     // Either dest := a op b
     // or dest := dest op a, depending on the number of arguments used
 
+    public OpTracker getTracker() {
+        return this.tracker;
+    }
+
     public float add(float a, float b) {
         tracker.trackALU(this);
         return a + b;

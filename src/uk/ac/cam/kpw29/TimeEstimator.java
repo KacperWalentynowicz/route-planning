@@ -6,6 +6,8 @@ public class TimeEstimator {
     private float PACK = 2.0f;
     private float UNPACK = 2.0f;
     private float JOURNEY = 20.0f;
+    private float MEM = 0.5f;
+    private float PQ = 100.0f;
 
     // this implements speedup from hardware parallelism
     // for example, we issue one SIMD instruction from the MPU
@@ -23,17 +25,28 @@ public class TimeEstimator {
         this.env = env;
     }
 
-    public TimeEstimator(EvaluationEnvironment env, float ALU, float PACK, float UNPACK, float JOURNEY) {
+    public TimeEstimator(EvaluationEnvironment env, float MEM, float ALU, float PACK, float UNPACK, float JOURNEY, float PQ) {
         this.env = env;
+        this.MEM = MEM;
         this.ALU = ALU;
         this.PACK = PACK;
         this.UNPACK = UNPACK;
         this.JOURNEY = JOURNEY;
+        this.PQ = PQ;
+    }
+
+    public float getMemTime(Core core) { // 1 nanosecond for a simple ALU operation
+        return MEM / getParallelSpeedup(core);
     }
 
     public float getALUTime(Core core) { // 1 nanosecond for a simple ALU operation
         return ALU / getParallelSpeedup(core);
     }
+
+    public float getPQTime(Core core) { // 1 nanosecond for a simple ALU operation
+        return PQ / getParallelSpeedup(core);
+    }
+
 
     public float getPackageTime(Core core, Message m) { // 2 nanoseconds for packaging the message
         return PACK * m.getSize() / getParallelSpeedup(core);

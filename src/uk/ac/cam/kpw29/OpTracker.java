@@ -42,6 +42,13 @@ public class OpTracker {
         return timeOnCores.get(core);
     }
 
+    public void trackMem(Core core) {
+        timeOnCores.compute(core, (key, value) -> value + estimator.getMemTime(core));
+    }
+
+    public void trackPQOperation(Core core) {
+        timeOnCores.compute(core, (key, value) -> value + estimator.getPQTime(core));
+    }
     public void trackALU(Core core) {
         timeOnCores.compute(core, (key, value) -> value + estimator.getALUTime(core));
     }
