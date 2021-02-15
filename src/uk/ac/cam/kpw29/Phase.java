@@ -3,7 +3,7 @@ package uk.ac.cam.kpw29;
 public class Phase {
     private final int id;
     private ConcurrentQueue<Task> taskQueue;
-    private String name;
+    public final String name;
     public Phase(String name, int id) {
         this.name = name;
         this.id = id;

@@ -2,6 +2,7 @@ package uk.ac.cam.kpw29;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -9,16 +10,8 @@ import java.util.Scanner;
 import static java.lang.Math.min;
 
 public class Graph {
-    private class Edge {
-        int to;
-        int from;
-        float len;
-        Edge(int from, int to, float len) {
-            this.from = from; this.to = to; this.len = len;
-        }
-    }
-
     private List<Edge> edgeList;
+    private ArrayList<ArrayList<Edge>> graphNodeIndexed;
     public int N, M;
 
     public Graph(String filename) {
@@ -27,18 +20,43 @@ public class Graph {
             Scanner myReader = new Scanner(myObj);
             N = myReader.nextInt();
             M = myReader.nextInt();
+
+            graphNodeIndexed = new ArrayList<>();
+            for (int i=0; i<N; ++i) {
+                graphNodeIndexed.add(new ArrayList<>());
+            }
             edgeList = new ArrayList<>();
+
             for (int i=0; i<M; ++i) {
                 int from = myReader.nextInt();
                 int to = myReader.nextInt();
                 float len = myReader.nextFloat();
-                edgeList.add(new Edge(from, to, len));
+                Edge e = new Edge(from, to, len);
+                edgeList.add(e);
+                graphNodeIndexed.get(from).add(e);
             }
+
             myReader.close();
+
+
         } catch (FileNotFoundException e) {
             System.out.println("An error occurred while reading the file.");
             e.printStackTrace();
         }
+    }
+
+
+    public List<Edge> getEdges() {
+        return edgeList;
+    }
+
+    public ArrayList<ArrayList<Edge>> getInducedSubgraph(ArrayList<Integer> nodes) {
+        ArrayList<ArrayList<Edge>> ret = new ArrayList<>();
+        for (Integer node : nodes) {
+            ret.add(graphNodeIndexed.get(node));
+        }
+
+        return ret;
     }
 
     public Matrix getAdjMatrix() {

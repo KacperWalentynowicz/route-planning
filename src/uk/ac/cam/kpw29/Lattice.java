@@ -1,6 +1,7 @@
 package uk.ac.cam.kpw29;
 
 import javafx.util.Pair;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -96,7 +97,7 @@ public class Lattice extends ProcessorArchitecture {
             }
         }
     }
-    public Lattice(EvaluationEnvironment env, int N_CORES) {
+    public Lattice(EvaluationEnvironment env, int N_CORES, String method) {
         super(env, N_CORES);
 
         N_ROW = (int)sqrt(N_CORES);
@@ -105,7 +106,15 @@ public class Lattice extends ProcessorArchitecture {
         }
 
         for (int i=0; i<N_CORES; ++i) {
-            addCore(new CannonCore(env, i));
+            if (method.equals("Cannon")) {
+                addCore(new CannonCore(env, i));
+            }
+            if (method.equals("Dijkstra")) {
+                addCore(new DijkstraCore(env, i));
+            }
+            if (method.equals("SPFA")) {
+                throw new NotImplementedException();
+            }
         }
 
         master = new MasterCore(env, N_CORES);

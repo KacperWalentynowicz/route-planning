@@ -10,6 +10,11 @@ public class LocalArray<E> extends ArrayList<E> {
         this.core = core;
     }
 
+    public LocalArray(Core core, ArrayList<E> copyFrom) {
+        super(copyFrom);
+        this.core = core;
+    }
+
     @Override
     public E get(int index) {
         core.getTracker().trackMem(core);
