@@ -25,7 +25,7 @@ public class MatMulAlgorithmMultiThreadedTests{
         this.tracker = new OpTracker(env);
         env.attachTracker(tracker);
 
-        this.proc = new Lattice(env, 4);
+        this.proc = new Lattice(env, 4, "Cannon");
         env.attachProc(proc);
 
         // This IS important, and needs to be done as the last operation in setup

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 
-public class MatMulAlgorithmSingleThreadedTests{
+public class DijkstraNoSpeedupMultiThreadedTests {
     private EvaluationEnvironment env;
     private Lattice proc;
     private OpTracker tracker;
@@ -25,7 +25,7 @@ public class MatMulAlgorithmSingleThreadedTests{
         this.tracker = new OpTracker(env);
         env.attachTracker(tracker);
 
-        this.proc = new Lattice(env, 4, "Cannon");
+        this.proc = new Lattice(env, 4, "Dijkstra");
         env.attachProc(proc);
 
         // This IS important, and needs to be done as the last operation in setup
@@ -37,21 +37,22 @@ public class MatMulAlgorithmSingleThreadedTests{
     }
 
     @Test
-    @Disabled
     //I used this one to debug on paper, N=3
-    public void testCannonMatMulSuperSmallTest() {
+    public void testDijkstraSuperSmallTest() {
         Graph g = new Graph("data/small_somewhere.txt");
-        MatMulAlgorithm algo = new MatMulAlgorithm(env, g, new CannonMatMul(env));
-        Matrix output = algo.getShortestPaths(g);
+        SSAlgorithm simple_dijkstra = new SSAlgorithm(env, g, new DijkstraNoSpeedup(env));
+
+        Matrix output = simple_dijkstra.getAllPairsShortestPaths(g);
         output.toFile("data/small_somewhere_output.txt");
     }
 
     @Test
-    public void testCannonMatMulSmallTest0() {
+    public void testDijkstraSmallTest0() {
         Graph g = new Graph("data/test_0.txt");
 
-        MatMulAlgorithm algo = new MatMulAlgorithm(env, g, new CannonMatMul(env));
-        Matrix output = algo.getShortestPaths(g);
+        SSAlgorithm simple_dijkstra = new SSAlgorithm(env, g, new DijkstraNoSpeedup(env));
+
+        Matrix output = simple_dijkstra.getAllPairsShortestPaths(g);
 
         Matrix model_ans = new Matrix("data/test_0_ans.txt");
 
@@ -59,10 +60,11 @@ public class MatMulAlgorithmSingleThreadedTests{
     }
 
     @Test
-    public void testCannonMatMulSmallTest1() {
+    public void testDijkstraSmallTest1() {
         Graph g = new Graph("data/test_1.txt");
-        MatMulAlgorithm algo = new MatMulAlgorithm(env, g, new CannonMatMul(env));
-        Matrix output = algo.getShortestPaths(g);
+        SSAlgorithm simple_dijkstra = new SSAlgorithm(env, g, new DijkstraNoSpeedup(env));
+
+        Matrix output = simple_dijkstra.getAllPairsShortestPaths(g);
 
         Matrix model_ans = new Matrix("data/test_1_ans.txt");
 
@@ -70,10 +72,11 @@ public class MatMulAlgorithmSingleThreadedTests{
     }
 
     @Test
-    public void testCannonMatMulSmallTest2() {
+    public void testDijkstraSmallTest2() {
         Graph g = new Graph("data/test_2.txt");
-        MatMulAlgorithm algo = new MatMulAlgorithm(env, g, new CannonMatMul(env));
-        Matrix output = algo.getShortestPaths(g);
+        SSAlgorithm simple_dijkstra = new SSAlgorithm(env, g, new DijkstraNoSpeedup(env));
+
+        Matrix output = simple_dijkstra.getAllPairsShortestPaths(g);
 
         Matrix model_ans = new Matrix("data/test_2_ans.txt");
 
@@ -81,10 +84,11 @@ public class MatMulAlgorithmSingleThreadedTests{
     }
 
     @Test
-    public void testCannonMatMulSmallTest3() {
+    public void testDijkstraSmallTest3() {
         Graph g = new Graph("data/test_3.txt");
-        MatMulAlgorithm algo = new MatMulAlgorithm(env, g, new CannonMatMul(env));
-        Matrix output = algo.getShortestPaths(g);
+        SSAlgorithm simple_dijkstra = new SSAlgorithm(env, g, new DijkstraNoSpeedup(env));
+
+        Matrix output = simple_dijkstra.getAllPairsShortestPaths(g);
 
         Matrix model_ans = new Matrix("data/test_3_ans.txt");
 
@@ -92,10 +96,11 @@ public class MatMulAlgorithmSingleThreadedTests{
     }
 
     @Test
-    public void testCannonMatMulSmallTest4() {
+    public void testDijkstraSmallTest4() {
         Graph g = new Graph("data/test_4.txt");
-        MatMulAlgorithm algo = new MatMulAlgorithm(env, g, new CannonMatMul(env));
-        Matrix output = algo.getShortestPaths(g);
+        SSAlgorithm simple_dijkstra = new SSAlgorithm(env, g, new DijkstraNoSpeedup(env));
+
+        Matrix output = simple_dijkstra.getAllPairsShortestPaths(g);
 
         Matrix model_ans = new Matrix("data/test_4_ans.txt");
 
