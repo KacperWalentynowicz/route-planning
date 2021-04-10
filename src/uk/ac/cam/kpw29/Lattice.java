@@ -113,7 +113,7 @@ public class Lattice extends ProcessorArchitecture {
                 addCore(new DijkstraCore(env, i));
             }
             if (method.equals("SPFA")) {
-                throw new NotImplementedException();
+                addCore(new SPFACore(env, i));
             }
         }
 
