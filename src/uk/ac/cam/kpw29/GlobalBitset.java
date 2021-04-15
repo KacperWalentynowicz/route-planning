@@ -20,10 +20,10 @@ public class GlobalBitset extends AtomicReferenceArray<Boolean> {
     }
 
     public void set(Core core, int i, Boolean b) {
-        Boolean prev = super.get(i);
         core.getTracker().trackSharedMem(core);
-        if (prev != b) {
-            synchronized (sumOfEntries) {
+        synchronized (sumOfEntries) {
+            Boolean prev = super.get(i);
+            if (prev != b) {
                 super.set(i, b);
                 if (b) {
                     sumOfEntries.getAndIncrement();
@@ -33,7 +33,11 @@ public class GlobalBitset extends AtomicReferenceArray<Boolean> {
                 }
             }
         }
+    }
 
-
+    public int countBits() {
+        synchronized (sumOfEntries) {
+            return sumOfEntries.get();
+        }
     }
 }
