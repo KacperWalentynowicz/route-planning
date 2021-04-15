@@ -98,6 +98,4 @@ public class Core {
             }
         }
     }
-
-    // TODO: add global array / set / queue reads/writes? Perhaps not?
 }

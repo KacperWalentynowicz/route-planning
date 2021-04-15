@@ -1,5 +1,7 @@
 package uk.ac.cam.kpw29;
 
+import javafx.util.Pair;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Array;
@@ -11,6 +13,9 @@ import static java.lang.Math.min;
 
 public class Graph {
     private List<Edge> edgeList;
+    private ArrayList<Float> coordsX;
+    private ArrayList<Float> coordsY;
+
     private ArrayList<ArrayList<Edge>> graphNodeIndexed;
     public int N, M;
 
@@ -22,11 +27,18 @@ public class Graph {
             M = myReader.nextInt();
 
             graphNodeIndexed = new ArrayList<>();
+            coordsX = new ArrayList<>();
+            coordsY = new ArrayList<>();
+
+            // reading coordinates
             for (int i=0; i<N; ++i) {
                 graphNodeIndexed.add(new ArrayList<>());
+                coordsX.add(myReader.nextFloat());
+                coordsY.add(myReader.nextFloat());
             }
-            edgeList = new ArrayList<>();
 
+            // reading edges
+            edgeList = new ArrayList<>();
             for (int i=0; i<M; ++i) {
                 int from = myReader.nextInt();
                 int to = myReader.nextInt();
@@ -45,6 +57,19 @@ public class Graph {
         }
     }
 
+    public float getCoordX(int node) {
+        return coordsX.get(node);
+    }
+    public float getCoordY(int node) {
+        return coordsY.get(node);
+    }
+
+    public ArrayList<Float> getXCoords() {
+        return coordsX;
+    }
+    public ArrayList<Float> getYCoords() {
+        return coordsY;
+    }
 
     public List<Edge> getEdges() {
         return edgeList;

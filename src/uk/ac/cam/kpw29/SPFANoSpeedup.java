@@ -1,11 +1,6 @@
 package uk.ac.cam.kpw29;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
-
-import static java.lang.Math.min;
-import static java.lang.Math.random;
 
 public class SPFANoSpeedup extends SSPolicy {
     private EvaluationEnvironment env;
@@ -25,10 +20,10 @@ public class SPFANoSpeedup extends SSPolicy {
         MasterCore master = proc.getMaster();
         master.setParallelMode(true);
 
-        Assignment randomPermutation = new Assignment(g.N, proc.N_CORES);
+        Assignment mapping = new Assignment(g, proc.N_CORES);
 
         for (int i=0; i<proc.N_CORES; ++i) {
-            ArrayList<Integer> responsibilities = randomPermutation.getAssigned(i);
+            ArrayList<Integer> responsibilities = mapping.getAssigned(i);
             Message setupMsg = new Message();
             setupMsg.addObject(responsibilities);
             setupMsg.addObject(g.getInducedSubgraph(responsibilities));
