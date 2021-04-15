@@ -17,7 +17,7 @@ public class SPFANoSpeedupMultiThreadedTests {
     public void setUp() {
         // DO NOT CHANGE SETUP ORDER
 
-        this.env = new EvaluationEnvironment(1);
+        this.env = new EvaluationEnvironment(8);
 
         this.estimator = new TimeEstimator(env);
         env.attachEstimator(estimator);
