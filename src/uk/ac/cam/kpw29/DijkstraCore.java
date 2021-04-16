@@ -11,7 +11,8 @@ public class DijkstraCore extends Core {
     LocalArray<FibonacciHeap.Entry<Integer>> entriesOut;
     LocalArray<FibonacciHeap.Entry<Integer>> entriesPQ;
     HashMap <Integer, Integer> reindex;
-
+    ArrayList<GlobalQueue<Integer>> relaxingQueues;
+    Assignment coreMapping;
     LocalHeap <Integer> priorityQueue;
     LocalHeap <Integer> outQueue;
 
