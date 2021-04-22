@@ -9,6 +9,13 @@
 \usepackage{verbatim}
 \usepackage{docmute}   % only needed to allow inclusion of proposal.tex
 \usepackage{csquotes}
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
 
 \raggedbottom                           % try to avoid widows and orphans
 \sloppy
@@ -120,10 +127,10 @@ During several previous decades of computing, hardware engineers have been able 
 The relationship between clock frequency and used power is non-linear, and therefore to achieve the same performance a single machine needs more energy than a parallel setup. Additionally, machines are suffering from von Neumann bottleneck. The processor and memory are separate, with data moving frequently between them. Latency increasing is an unavoidable consequence of physical distance between destinations, resistance of wires, and other key factors. 
 
 Importance of scalability also cannot be underestimated\footnote{to be precise, it is primarily a feature of distributed systems rather than all parallel ones}. The cost of adding new machines to already existing system is very cheap compared to improving processor designs. 
-However, parallel systems are not perfect and generate numerous other difficulties which I'm discussing in section 1.3.
+However, parallel systems generate numerous other difficulties which I'm discussing in section 1.3.
 
 \section{Shortest path problem}
-In my dissertation I am studying the shortest paths as an important example of fundamental computer science algorithms. Shortest paths algorithms play an important role in graph theory, also as a building block in more complicated algorithms (such as Minimum Cost Maximum Flow). Additionally, they are prevalent in other domains such as internet routing, route - planning (for vehicles), or planning in robotics. 
+In my project I am studying shortest paths as an important example of fundamental computer science algorithms. Shortest paths algorithms play an important role in graph theory, also as a building block in more complicated algorithms (such as Minimum Cost Maximum Flow). Additionally, they are prevalent in other domains such as internet routing, route - planning (for vehicles), or planning in robotics. 
 
 Formally, let $G(V,E)$ be a graph with vertex set $V$ and edge set $E$. For our purposes, each edge $i$ ($1\leq i\leq |E|)$ is of the form $(a_i, b_i, w_i)$ and allows moving from vertex $a_i$ to $b_i$ which takes time $w_i$. 
 
@@ -162,20 +169,117 @@ Some algorithms (such as Dijkstra's) are notoriously difficult to parallelize du
 \chapter{Preparation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Starting point}
-Obvious
+Prior to the project, I did not have much experience with parallel programming. Some principles and methods have been outlined in \textit{Concurrent and Distributed Systems} part IB course.
+
+Starting point of the project, was therefore, nearly from level zero. Apart from reading shallowly about possible parallelizations of Dijkstra's algorithm. The only code which I had implemented, were sequential versions of Dijkstra's and SPFA algorithms to serve as a proof-of-concept that SPFA can compete with Dijkstra's algorithm in terms of performance even in the standard setup of sequential machines\footnote{See the beginning of $2.3.3$ for details}.
+
 \section{Requirements analysis}
-here: we need a tool for evaluation. requirements for the simulator - addressing some of the challenges above (single and multi threaded, customizable wrt many things to enable experiments, etc)
+As described in the introduction, parallel algorithms are an interesting, but challenging topic. Because performance of algorithms is heavily influenced by system architecture, my project needs to consider these. Following initial analysis of the problem, I have decided that a key component of the project would be a simulator providing an evaluation environment for the algorithms.
+
+The tool needed the following features:
+
+\begin{enumerate}
+    \item Allow the abstract description of a parallel algorithm to be easily translated into a working code.
+    \item Provide functionalities for cores - entities which are going to perform work of our algorithms. These include basic primitives such as ALU\footnote{Arithmetic Logic Unit} operations, accessing local DRAM of the cores, as well as simple data structures for those: local arrays, queues, and sets. 
+    \item Provide means of communicating for the cores - either by passing messages (broadcast or core-core), or accessing shared data structures in memory.
+    \item Allow specifying the topology of interconnections to reflect that in real-world machines there is limited number of direct connection between workers.
+    \item All of the operations should be implicitly tracked by the evaluation environment. The programmer should also be able to specify what the costs of various operations in the system are \footnote{they are independent of the algorithm used for computation}, in order to test the algorithms in different circumstances.
+    \item Running the simulations using multiple threads of a physical machine (my laptop with an $8$-core processor), so that the computations do not run unreasonably long.
+    \item Allowing to run the simulations in single-threaded debug mode. There are lots of surprising concurrency bugs which can arise from incorrect implementations and are not easy to find. Therefore, a debug mode which allows deterministic execution could prove very useful.
+\end{enumerate}
 
 \section{Algorithms}
+In my project I have studied parallelizations of three different standard algorithms for shortest paths, and evaluated their relative tradeoffs. In this section I am briefly describing the sequential versions and the ideas associated with their efficient parallelizations. The exact division between \textit{Preparation} and \textit{Implementation} chapters is somewhat blurred, as understanding the algorithm, its exact requirements and limitations is the key part. Afterwards, translating the algorithm into the code running on the simulation environment should be rather smooth.
+
+In the descriptions of the algorithms I am assuming the standard conventions: the graph $G(V,E)$ has $N$ vertices labeled from $1$ to $N$ and $M$ edges. If a path between the source does not exist, its length is $\infty$.
 
 \subsection{Matrix multiplication}
-here I describe parallel matrix multiplication algorithm, mentioning what challenges are there towards efficient implementation
+The first algorithm implemented by me was an algorithm based on matrix multiplication, let's call it MatMul. It is an All-Pairs shortest paths algorithm which calculates the answer in the array $dist[N][N]$. Its operation consists of $log(N)$ steps of dynamic programming.
 
-\subsection{Dijkstra}
+In the initialization phase, we calculate the shortest distance assuming that we are allowed to traverse no more than $1$ edge - the adjacency matrix.
+
+Now, let's assume we want to know what are the shortest paths if we are allowed to traverse no more than $2K$ edges, for some $K$. What does a path from $a$ to $b$ that uses no more than $2K$ edges consist of? A path from $a$ to some intermediary node $c$ of no more than $K$ edges, followed by a path from $c$ to $b$, also of no more than $K$ edges. We don't know what $c$ is, but we can simply consider all the options! 
+
+Therefore, given $dist_{K}[N][N]$ we can easily calculate $dist_{2K}[N][N]$. The following pseudocode solves our shortest path problem.
+
+\begin{algorithm}
+\caption{MatMulDynamicProgramming}\label{matmuldp}
+\begin{algorithmic}[1]
+\Procedure{MatMulDP(G)}{}
+\State $\textit{dist} \gets G.adj\_matrix()$
+\State $\textit{newdist} \gets dist$
+    \For{$step \gets 1$ to $log(N)$} 
+        \For{$a \gets 1$ to $N$}
+        \For{$b \gets 1$ to $N$}
+            \State $newdist[a][b] \gets dist[a][b]$
+        \For{$c \gets 1$ to $N$}
+            \State $newdist[a][b] \gets min(newdist[a][b], dist[a][c] + dist[c][b])$
+        \EndFor
+        \EndFor
+        \EndFor
+        \State $dist \gets newdist$
+      \EndFor
+\State \textbf{return} $dist$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+One can notice that the innermost loop resembles matrix multiplications with an operator switch - sum over all elements is substituted with min, and we are adding two terms rather than multiplying.
+
+\begin{algorithm}
+\caption{MatMul}\label{matmul}
+\begin{algorithmic}[1]
+\Procedure{MatMul(G)}{}
+\State $\textit{dist} \gets G.adj\_matrix()$
+    \For{$step \gets 1$ to $log(N)$}
+        \State $dist \gets multiply\_matrix\_by\_itself(dist,(+,min))$
+      \EndFor
+\State \textbf{return} $dist$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+It is very clear what needs to be done to obtain an efficient parallel algorithm - write good matrix multiplication! For that, we can use Cannon's algorithm \cite{cannon}, which ensures that there is little unnecessary movement of data between iterations. The operation of Cannon's algorithm is described in the \textit{Implementation} section of MatMul, which would be almost empty if I included a description of Cannon's algorithm here. 
+
+\subsection{Dijkstra's algorithm}
+Dijkstra's algorithm is one of the most well known computer science algorithms taught in every course on standard algorithms, and therefore just recalling its pseudocode will suffice.
+
+\begin{algorithm}
+\caption{Dijkstra's algorithm}\label{dijkstra}
+\begin{algorithmic}[1]
+\Procedure{Dijkstra(G, source)}{}
+\For{$node \gets 1$ to $N$}
+    \State $dist[node] \gets \infty$
+\EndFor
+\State $dist[source] \gets 0$
+\State $Q \gets G.nodes()$
+    \While{\textbf{not} Q.empty()}
+        \State $u \gets$ node in $Q$ with minimal $dist[]$
+        \State $Q \gets Q \setminus \{u\}$
+        \For{\textbf{each} edge ($u$, $v$, $w$)}
+        \If{$dist[v] > dist[u] + w$}
+            \State $dist[v] \gets dist[u] + w$
+        \EndIf
+      \EndFor
+    \EndWhile
+    
+    
+\State \textbf{return} $dist$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+There is a notable difficulty in parallelizing this algorithm - in line $7$ nodes are being taken one after another in different iterations. There are lots of data dependencies, because changes in $dist$ may affect which nodes in the subsequent iterations. Nonetheless, there have been attempts at efficient parallelizations.
+
+$Q$ is a priority queue, typically implemented with a Fibonacci heap to guarantee $O(|E| + |V| log |V|)$ runtime. A simple approach  AAAAAAAAAA
+
 here I describe parallel dijkstra, mentioning what challenges are there towards efficient implementation
 
 \subsection{SPFA}
 here I describe parallel adaptation of SPFA, what is the idea behind this design (relaxing consistency), why it can be really good in terms of parallellization, mentioning what challenges are there towards efficient implementation (not that many, but still). I hope that I can present this as easy solution if you need a fast algorithm which is not too complicated.
+
+\section{Reconstruction of paths}
+dah... my path
 
 \section{Datasets}
 what is OSMNX, why I chose it to get city networks and not artificial graphs, acknowledging Geoff Boeing
