@@ -80,7 +80,35 @@ The original aim of the project was to study several existing approaches to exte
 
 \section*{Work Completed}
 
-I have successfully implemented the tool which allows simulation of algorithms on various parallel architectures. Then, I have met the other goals of the project by implementing and evaluating several parallel adaptations of known shortest path algorithms: Dijkstra's algorithm, Matrix multiplication algorithm and SPFA algorithm. I have then compared the parallel approaches taking into account both theoretical merits and disadvantages, as well as empirical evaluation on real-world road networks.
+I have successfully implemented the tool which allows simulation
+kwalentynowicz12: old algorithms were not designed with sequential model in mind, and may exhibit natural parallelism
+Mar 4, 2021 3:57 PM
+Hit Enter to reply
+kwalentynowicz12: 1.8: symmetry, homogeneity and embedding
+Mar 4, 2021 4:22 PM
+Hit Enter to reply
+kwalentynowicz12: Kacper, describe the claffication of parallel computers - Flynn, and more recent. Flynns, remain useful. See pages 8-9 of my book. Characteristic of the problem lends itself to SIMD or MIMD.
+The cores are connected via routeing network which again plays an important role depending on the communication required in the problem itself.
+Mar 10, 2021 11:13 AM
+kwalentynowicz12: I will introduce Flynn's classification in preparation chapter. In introduction is too in-depth
+Apr 22, 2021 10:18 AM
+Hit Enter to reply
+kwalentynowicz12: perhaps not the most important ones? @David
+Apr 21, 2021 12:24 PM
+Hit Enter to reply
+kwalentynowicz12: Describe in Implementation why this feature is actually not trivial to achieve
+Apr 22, 2021 3:59 PM
+Hit Enter to reply
+kwalentynowicz12: perhaps some better version of layout is possible here?
+Apr 22, 2021 4:00 PM
+Hit Enter to reply
+You: This is important ......
+Apr 23, 2021 11:42 AM • Edit
+Hit Enter to reply
+Current file
+Overview
+2
+ of algorithms on various parallel architectures. Then, I have met the other goals of the project by implementing and evaluating several parallel adaptations of known shortest path algorithms: Dijkstra's algorithm, Matrix multiplication algorithm and SPFA algorithm. I have then compared the parallel approaches taking into account both theoretical merits and disadvantages, as well as empirical evaluation on real-world road networks.
 
 \section*{Special Difficulties}
 
@@ -119,7 +147,7 @@ Last but not least, I would like to thank my wife Marta, for her insightful comm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Introduction}
 How much algorithm redesign is needed for parallel architectures? It is certainly not an easy question to answer. For sequential machines, various No Free Lunch theorems \cite{free-lunch} establish that there is no algorithm perfect for all applications. This phenomenon is  visible in parallel systems where communication or synchronization costs may outweigh advantages arising from parallelization, especially if the problem instance is not large. Although there exist attempts at writing software capable of performing efficient parallelizations (such as MIT's pMapper \cite{pmapper}), designing efficient parallel algorithms remains an important challenge. In my project, I have investigated known sequential algorithms for the shortest path problem and considered their different parallel adaptations.
-
+(DISCUSS)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Importance of parallel algorithms}
 During several previous decades of computing, hardware engineers have been able to deliver better processors as quickly as Gordon Moore had anticipated in the 1970s. Recently, it seems like the boundaries can no longer be pushed as the Moore's Law has slowed down\cite{moore-law}, and programmers will need to resort to alternative ways of achieving speedup. The natural solution is using multiple workers; cores on a single machine or simply several machines communicating together. The most important benefits are energy efficiency and scalability. 
@@ -191,7 +219,7 @@ The tool needed the following features:
 \section{Algorithms}
 In my project I have studied parallelizations of three different standard algorithms for shortest paths, and evaluated their relative tradeoffs. In this section I am briefly describing the sequential versions and the ideas associated with their efficient parallelizations. The exact division between \textit{Preparation} and \textit{Implementation} chapters is somewhat blurred, as understanding the algorithm, its exact requirements and limitations is the key part. Afterwards, translating the algorithm into the code running on the simulation environment should be rather smooth.
 
-In the descriptions of the algorithms I am assuming the standard conventions: the graph $G(V,E)$ has $N$ vertices labeled from $1$ to $N$ and $M$ edges. If a path between the source does not exist, its length is $\infty$.
+In the descriptions of the algorithms I am assuming the standard conventions: the graph $G(V,E)$ has $N$ vertices labeled from $1$ to $N$ and $M$ edges of non-negative weights. If a path between the source does not exist, its length is $\infty$. In parallel algorithms, workers (called interchangeably 'cores') are labeled from $1$ to $C$.
 
 \subsection{Matrix multiplication}
 The first algorithm implemented by me was an algorithm based on matrix multiplication, let's call it MatMul. It is an All-Pairs shortest paths algorithm which calculates the answer in the array $dist[N][N]$. Its operation consists of $log(N)$ steps of dynamic programming.
@@ -271,18 +299,187 @@ Dijkstra's algorithm is one of the most well known computer science algorithms t
 
 There is a notable difficulty in parallelizing this algorithm - in line $7$ nodes are being taken one after another in different iterations. There are lots of data dependencies, because changes in $dist$ may affect which nodes in the subsequent iterations. Nonetheless, there have been attempts at efficient parallelizations.
 
-$Q$ is a priority queue, typically implemented with a Fibonacci heap to guarantee $O(|E| + |V| log |V|)$ runtime. A simple approach  AAAAAAAAAA
+$Q$ is a priority queue, typically implemented with a Fibonacci heap to guarantee $O(|E| + |V| log |V|)$ runtime. A simple approach for a parallel speedup would be to split the slow computation of selecting the vertex with minimal distance. In the initialization phase, we would like to partition the nodes for our workers, so that each node has exactly one worker assigned to it. Therefore, $assigned(u)$ be a function which returns the worker to whom node $u$ was assigned. Whenever line $7$ is executed, each of the workers would calculate minimal distance vertex independently, and afterwards they would communicate to find the global minimal distance vertex.
 
-here I describe parallel dijkstra, mentioning what challenges are there towards efficient implementation
+There is a subtlety here: when a successful relaxation of edge $(u,v,w)$ is performed in line $11$, the worker $assigned(v)$ must be made aware of this change. This can be resolved either by sending a message from $assigned(u)$ to $assigned(v)$, or by $assigned(v)$ periodically scanning through distances of vertices it is responsible for rather than keeping them in a priority queue. Let's summarize the approach in a pseudocode.
 
-\subsection{SPFA}
-here I describe parallel adaptation of SPFA, what is the idea behind this design (relaxing consistency), why it can be really good in terms of parallellization, mentioning what challenges are there towards efficient implementation (not that many, but still). I hope that I can present this as easy solution if you need a fast algorithm which is not too complicated.
+\begin{algorithm}
+\caption{Simple Parallel Dijkstra}\label{pdijkstra}
+\begin{algorithmic}[1]
+\Procedure{SimpleParallelDijkstra(G, source)}{}
+\For{$node \gets 1$ to $N$}
+    \State $dist[node] \gets \infty$
+\EndFor
+\State $dist[source] \gets 0$
+\State $assign\_nodes\_to\_workers()$
+\State $Q \gets G.nodes()$
+    \While{\textbf{not} Q.empty()}
+        \For{\textbf{each} core $c$ \textbf{concurrently}}
+        \State $u_c \gets$ node in $Q$ such that $assigned(u_c) = c$ with minimal $dist[]$
+        \EndFor
+        \State $u \gets u_c$ with minimal $dist[]$
+        \State $Q \gets Q \setminus \{u\}$
+        \For{\textbf{each} edge ($u$, $v$, $w$)}
+        \If{$dist[v] > dist[u] + w$}
+            \State $dist[v] \gets dist[u] + w$
+            \State $communicate\_change(assigned(v), v, dist[u] + w)$
+        \EndIf
+      \EndFor
+    \EndWhile
+    
+    
+\State \textbf{return} $dist$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+Crauser et al. (1998) \cite{dijkstra} introduced a strong improvement. In their paper \textit{A Parallelization of Dijkstra's Shortest Path Algorithm} they describe another opportunity for exploiting parallelism. The idea is to run the algorithm in phases, and in each phase try to remove from $Q$ many vertices whose distance is never going to change.\footnote{unlike just one in the standard algorithm}
+
+Let $OUT(u)$ be the minimal weight of an edge going out of $u$. If $dist[u]$ is guaranteed not to change, all vertices $v$ satisfying $dist[v] \leq dist[u] + OUT(u)$ can never be relaxed by $u$. At the beginning of each phase, we can calculate $L = min(dist[u] + OUT(u))$ among vertices $u$ present in $Q$. Then, all vertices $u$ satisfying $dist[u] \leq L$ can be removed from $Q$ simultaneously!\footnote{As $L$ is $min(dist[u] + OUT(u))$ over all nodes in $Q$, no node can relax any further}
+
+Crauser et al. (1998)\cite{dijkstra} prove that this optimization reduces with high probability the number of phases to $\sqrt{|V|}$ while staying work-efficient. In section $4$ of their paper, the parallel implementation is also suggested. I leave the details to the \textit{Implementation} chapter.
+
+\subsection{Shortest Path Faster Algorithm}
+Although one can extract a lot of parallelism from such a highly sequential algorithm like Dijkstra's, it may be better to design an algorithm with parallelism in mind. 
+
+A limiting factor of Dijkstra's algorithm is the strong constraint that a vertex may never be relaxed again, and maintaining a priority queue. A relatively unpopular algorithm which originated in the $1950$s\footnote{According to Wikipedia, the exact description (with a name algorithm D) can be found in:  Moore, Edward F. (1959).  ”The shortest path through a maze”.  Proceedings of the International Symposium on the Theory of Switching.  Harvard University Press.  pp.  285–292. I have not managed to find the access to this resource and verify this information myself.} lacks these bottlenecks. A simple version of this algorithm abandons priority in the queue and performs relaxations while there are some possible.
+
+\begin{algorithm}
+\caption{Chaotic relaxation}\label{chaotic}
+\begin{algorithmic}[1]
+\Procedure{Chaotic Relaxation(G, source)}{}
+\For{$node \gets 1$ to $N$}
+    \State $dist[node] \gets \infty$
+\EndFor
+\State $dist[source] \gets 0$
+\State $Q \gets \{source\}$ \Comment{Q is a normal queue without priorities}
+    \While{\textbf{not} Q.empty()}
+        \State $u \gets Q.pop\_front()$
+        \For{\textbf{each} edge ($u$, $v$, $w$)}
+        \If{$dist[v] > dist[u] + w$}
+            \State $dist[v] \gets dist[u] + w$
+            \State $Q.push(v)$
+        \EndIf
+      \EndFor
+    \EndWhile
+\State \textbf{return} $dist$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+Correctness of the algorithm is obvious - the relaxations are going to be performed as long as there is one. SPFA adds a tiny change in line $11$: it does not add a vertex to the queue if it is there already.  
+
+\begin{algorithm}
+\caption{SPFA}\label{spfa}
+\begin{algorithmic}[1]
+\Procedure{SPFA(G, source)}{}
+\For{$node \gets 1$ to $N$}
+    \State $dist[node] \gets \infty$
+\EndFor
+\State $dist[source] \gets 0$
+\State $Q \gets \{source\}$ \Comment{Q is a normal queue without priorities}
+    \While{\textbf{not} Q.empty()}
+        \State $u \gets Q.pop\_front()$
+        \For{\textbf{each} edge ($u$, $v$, $w$)}
+        \If{$dist[v] > dist[u] + w$}
+            \State $dist[v] \gets dist[u] + w$
+            \If{$v$ is not in $Q$} \Comment{The only change from ChaoticRelaxation}
+                \State $Q.push(v)$
+                \EndIf
+        \EndIf
+      \EndFor
+    \EndWhile
+\State \textbf{return} $dist$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+This tiny change gives an empirically fast algorithm, which is believed to work in $O(|E|)$ on random graphs. In recent years, SPFA has been popularized by fans of algorithmic competitions\footnote{and this is how I have heard about it first}, and it even has a Wikipedia page\footnote{https:\/\/en.wikipedia.org\/wiki\/Shortest\_Path\_Faster\_Algorithm}, but sources there appear to be several niche websites citing one another. Analyzing mathematically the expected runtime of SPFA is outside the scope of this project. Nonetheless, before the project I have carried out experiments to check behaviour of this algorithm on a large graph - California Road Network collected by various researches and introduced in \cite{CRN}. Nodes were put into the queue $7$ times on average, and the runtime was faster than Dijkstra's algorithm's. The initial experiments showed that not only was SPFA fast, but also promising in terms of parallel execution. This is because there are little restrictions on the order in which relaxations should be performed, which makes it suitable for parallel implementation.
+
+Devising a parallel version is very natural, and uses a similar mapping of graph nodes to cores as parallel Dijkstra. 
+
+\begin{algorithm}
+\caption{Parallel SPFA}\label{pspfa}
+\begin{algorithmic}[1]
+\Procedure{Parallel SPFA(G, source)}{}
+\For{$node \gets 1$ to $N$}
+    \State $dist[node] \gets \infty$
+\EndFor
+\State $dist[source] \gets 0$
+\State $assign\_nodes\_to\_workers()$
+\State $Q \gets \{source\}$ \Comment{Q is a normal queue without priorities}
+    \While{\textbf{not} Q.empty()}
+        \For{\textbf{each} core $c$ \textbf{concurrently}}
+        \State $u_c \gets Q.pop\_front()$
+        \For{\textbf{each} edge ($u_c$, $v$, $w$)}
+        \If{$dist[v] > dist[u_c] + w$}
+            \State $dist[v] \gets dist[u_c] + w$
+            \If{$v$ is not in $Q$}
+                \State $Q.push(v)$
+                \EndIf
+        \EndIf
+        \EndFor
+      \EndFor
+    \EndWhile
+\State \textbf{return} $dist$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+There are several concurrency issues possible: $Q$ needs to be accessed by multiple workers, and collaboration on shared $dist$ array is required. The discussion is continued in the \textit{Implementation} chapter.
 
 \section{Reconstruction of paths}
-dah... my path
+In section $2.3$ the algorithms calculate only the array of shortest distances, rather than all the paths. This simplifies the codes and explanations. To give a full picture, this short section explains how to extend the algorithms to answer queries about the paths.
+
+We are going to introduce a predecessor array $pred[]$ which will maintain previous node on the shortest path. For Dijkstra's algorithm and SPFA it is sufficient to update $pred[]$ alongside with relaxations: when we are applying an update $dist[v] = dist[u] + w$, we also set $pred[v] = u$.
+
+In case of MatMul the change is marginal, too. For initialization:$\displaystyle\mathop{\forall}_{a,b}pred[a][b] = a$. For the second phase, $min(newdist[a][b],dist[a][c]+dist[c][b])$ can be rewritten equivalently, after which it's clear when to update predecessor matrix:
+\begin{algorithm}
+\begin{algorithmic}[1]
+    \If{$newdist[a][b] > dist[a][c] + dist[c][b]$}
+        \State $newdist[a][b] \gets dist[a][c] + dist[c][b]$
+        \State $pred[a][b] \gets pred[c][b]$
+    \EndIf
+\end{algorithmic}
+\end{algorithm}
+Starting this way would not allow me to draw a connection betwen the algorithm and matrix multiplication so clearly.
+
+There is another, even easier approach which can be useful especially if tight memory constraints are an issue: calculating the predecessor on the spot, just based on the distance array, as in the following code.
+
+\begin{algorithm}
+\caption{Reconstruction of paths}\label{pathrec}
+\begin{algorithmic}[1]
+\Procedure{Reconstruct-Path(source, dest)}{}
+\If{source $=$ dest}
+\State \textbf{return} [dest]
+\Else
+    \State $pred \gets None$
+    \For{\textbf{each} edge ($u$, $dest$, $w$)}
+    \If{$dist[u] + w = dist[dest]$}
+    \State $pred \gets u$
+    \EndIf
+    \EndFor
+    \State \textbf{return} append(Reconstruct-Path(source, pred), dest)
+\EndIf
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+Once line $9$ is reached, $pred$ cannot be $None$ - there must exist a previous vertex on the shortest path, and that vertex satisfies $dist[u] + w = dist[dest]$. This concludes the remark that with little additional effort, we can answer any shortest path query given array of distances.
 
 \section{Datasets}
-what is OSMNX, why I chose it to get city networks and not artificial graphs, acknowledging Geoff Boeing
+To test shortest path algorithms, one needs graphs. I have decided to get my data with the help of OSMNX\cite{Boeing2017}\footnote{Although the author does not mention it explicitly, the name comes probably from crossing OpenStreetMap with NetworkX, which on its own explains a lot about this library}. This python package, created by Geoff Boeing, is an excellent tool for working with road networks. It is a perfect fit for my project, because it provides one-line functions for:
+\begin{itemize}
+    \item downloading road networks of any size based on geographical locations or names
+    \item plotting networks or shortest paths
+    \item automatic simplification of network topologies by removing graph nodes with $2$ neighbors
+\end{itemize} 
+
+Let's finish the chapter with a demonstration of OSMNX's usefulness. Creating the plot below took me only a couple of minutes.
+
+\includegraphics[scale=0.6]{code-demo-osmnx.png}
+\begin{center}\includegraphics[scale=0.5]{camb-demo-osmnx.png}\end{center}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Implementation}
