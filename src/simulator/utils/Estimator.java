@@ -1,6 +1,7 @@
 package simulator.utils;
+import java.util.Random;
 
-public class TimeEstimator {
+public class Estimator {
     private EvaluationEnvironment env;
     private float ALU = 1.0f;
     private float PACK = 2.0f;
@@ -8,7 +9,11 @@ public class TimeEstimator {
     private float JOURNEY = 20.0f;
     private float MEM = 0.5f;
     private float PQ = 100.0f;
+    private Random rng;
 
+    private float normal(float mean, float variance) {
+        return (float)(mean + rng.nextGaussian()) / variance;
+    }
     // this implements speedup from hardware parallelism
     // for example, we issue one SIMD instruction from the MPU
     // we want a broadcast to all N neighbors available,
@@ -21,11 +26,13 @@ public class TimeEstimator {
         return divide;
     }
 
-    public TimeEstimator(EvaluationEnvironment env) {
+    public Estimator(EvaluationEnvironment env) {
+        this.rng = new Random();
         this.env = env;
     }
 
-    public TimeEstimator(EvaluationEnvironment env, float MEM, float ALU, float PACK, float UNPACK, float JOURNEY, float PQ) {
+    public Estimator(EvaluationEnvironment env, float MEM, float ALU, float PACK, float UNPACK, float JOURNEY, float PQ) {
+        this.rng = new Random();
         this.env = env;
         this.MEM = MEM;
         this.ALU = ALU;
@@ -36,11 +43,11 @@ public class TimeEstimator {
     }
 
     public float getMemTime(Core core) { // 1 nanosecond for a simple ALU operation
-        return MEM / getParallelSpeedup(core);
+        return normal(MEM, MEM*0.2f) / getParallelSpeedup(core);
     }
 
     public float getALUTime(Core core) { // 1 nanosecond for a simple ALU operation
-        return ALU / getParallelSpeedup(core);
+        return normal(ALU, ALU*0.2f)/ getParallelSpeedup(core);
     }
 
     public float getPQTime(Core core) { // 1 nanosecond for a simple ALU operation
@@ -49,18 +56,16 @@ public class TimeEstimator {
 
 
     public float getPackageTime(Core core, Message m) { // 2 nanoseconds for packaging the message
-        return PACK * m.getSize() / getParallelSpeedup(core);
+        return normal(PACK, PACK*0.2f) * m.getSize() / getParallelSpeedup(core);
     }
 
     // estimates time the message needs to be send from Core from to Core to
     // 20ns per each connection between these
-    // ignoring queuing delay for now
-    // TODO: add queuing delay?
     public float getJourneyTime(Core from, Core to) {
-        return JOURNEY * env.getProcessorArchitecture().getDistance(from, to);
+        return normal(JOURNEY, JOURNEY*0.2f) * env.getProcessorArchitecture().getDistance(from, to);
     }
 
     public float getUnPackageTime(Core core, Message m) { // 2 nanoseconds for unpacking
-        return UNPACK * m.getSize() / getParallelSpeedup(core);
+        return normal(UNPACK, UNPACK*0.2f) * m.getSize() / getParallelSpeedup(core);
     }
 }

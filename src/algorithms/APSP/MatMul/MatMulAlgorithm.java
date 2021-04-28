@@ -1,6 +1,7 @@
 package algorithms.APSP.MatMul;
 
 import graphs.*;
+import javafx.util.Pair;
 import simulator.utils.*;
 
 public class MatMulAlgorithm {
@@ -14,16 +15,17 @@ public class MatMulAlgorithm {
         this.policy = policy;
     }
 
-    public Matrix getShortestPaths(Graph g) {
+    public Pair<Matrix, Metrics> getShortestPaths(Graph g) {
         Matrix distances = g.getAdjMatrix();
         env.startEvaluation();
-        double time_taken = 0.0f;
+        Metrics executionTimes = new Metrics(0.0, 0.0);
+
         for (int correctupTo=1; correctupTo < g.N; correctupTo *= 2) {
-            time_taken += policy.multMin(distances, distances, distances);
+            executionTimes.add(policy.multMin(distances, distances, distances));
         }
 
 
         env.finishEvaluation();
-        return distances.subMatrix(0, 0, g.N);
+        return new Pair(distances.subMatrix(0, 0, g.N), executionTimes);
     }
 }

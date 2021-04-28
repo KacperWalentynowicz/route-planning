@@ -9,13 +9,13 @@ import static java.lang.Math.max;
 
 public class OpTracker {
     private final EvaluationEnvironment env;
-    private final TimeEstimator estimator;
+    private final Estimator estimator;
     private ConcurrentMap <Core, Float> timeOnCores;
 
 
     public OpTracker(EvaluationEnvironment env) {
         this.env = env;
-        this.estimator = env.getTimeEstimator();
+        this.estimator = env.getEstimator();
     }
 
     public void reset(float value) {
@@ -26,16 +26,20 @@ public class OpTracker {
     }
 
     public void synchronizeAfterPhase() {
-        float MaxValue = getTotalTime();
-        reset(MaxValue);
+        reset((float)getTotalTime().getExecutionTime());
     }
 
-    public float getTotalTime() {
-        float result = Float.MAX_VALUE;
+    public Metrics getTotalTime() {
+        double max_runtime = 0.0;
+        double work_performed = 0.0;
+
         for (Core core : env.getCores()) {
-            result = max(result, this.getTime(core));
+            double tm = this.getTime(core);
+            max_runtime = max(max_runtime, tm);
+            work_performed += tm;
         }
-        return result;
+
+        return new Metrics(max_runtime, work_performed);
     }
 
     public float getTime(Core core) {

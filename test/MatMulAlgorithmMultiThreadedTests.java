@@ -13,7 +13,7 @@ public class MatMulAlgorithmMultiThreadedTests{
     private EvaluationEnvironment env;
     private Lattice proc;
     private OpTracker tracker;
-    private TimeEstimator estimator;
+    private Estimator estimator;
     private final float EPS = 0.001f;
     @BeforeEach
     public void setUp() {
@@ -21,7 +21,7 @@ public class MatMulAlgorithmMultiThreadedTests{
 
         this.env = new EvaluationEnvironment(8);
 
-        this.estimator = new TimeEstimator(env);
+        this.estimator = new Estimator(env);
         env.attachEstimator(estimator);
 
         this.tracker = new OpTracker(env);
@@ -43,7 +43,7 @@ public class MatMulAlgorithmMultiThreadedTests{
         Graph g = new Graph("data/test_0.txt");
 
         MatMulAlgorithm algo = new MatMulAlgorithm(env, g, new CannonMatMul(env));
-        Matrix output = algo.getShortestPaths(g);
+        Matrix output = algo.getShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_0_ans.txt");
 
@@ -54,7 +54,7 @@ public class MatMulAlgorithmMultiThreadedTests{
     public void testCannonMatMulSmallTest1() {
         Graph g = new Graph("data/test_1.txt");
         MatMulAlgorithm algo = new MatMulAlgorithm(env, g, new CannonMatMul(env));
-        Matrix output = algo.getShortestPaths(g);
+        Matrix output = algo.getShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_1_ans.txt");
 
@@ -65,7 +65,7 @@ public class MatMulAlgorithmMultiThreadedTests{
     public void testCannonMatMulSmallTest2() {
         Graph g = new Graph("data/test_2.txt");
         MatMulAlgorithm algo = new MatMulAlgorithm(env, g, new CannonMatMul(env));
-        Matrix output = algo.getShortestPaths(g);
+        Matrix output = algo.getShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_2_ans.txt");
 
@@ -76,7 +76,7 @@ public class MatMulAlgorithmMultiThreadedTests{
     public void testCannonMatMulSmallTest3() {
         Graph g = new Graph("data/test_3.txt");
         MatMulAlgorithm algo = new MatMulAlgorithm(env, g, new CannonMatMul(env));
-        Matrix output = algo.getShortestPaths(g);
+        Matrix output = algo.getShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_3_ans.txt");
 
@@ -87,7 +87,7 @@ public class MatMulAlgorithmMultiThreadedTests{
     public void testCannonMatMulSmallTest4() {
         Graph g = new Graph("data/test_4.txt");
         MatMulAlgorithm algo = new MatMulAlgorithm(env, g, new CannonMatMul(env));
-        Matrix output = algo.getShortestPaths(g);
+        Matrix output = algo.getShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_4_ans.txt");
 

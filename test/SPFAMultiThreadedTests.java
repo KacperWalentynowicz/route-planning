@@ -13,7 +13,7 @@ public class SPFAMultiThreadedTests {
     private EvaluationEnvironment env;
     private Lattice proc;
     private OpTracker tracker;
-    private TimeEstimator estimator;
+    private Estimator estimator;
     private final float EPS = 0.001f;
     @BeforeEach
     public void setUp() {
@@ -21,13 +21,13 @@ public class SPFAMultiThreadedTests {
 
         this.env = new EvaluationEnvironment(8);
 
-        this.estimator = new TimeEstimator(env);
+        this.estimator = new Estimator(env);
         env.attachEstimator(estimator);
 
         this.tracker = new OpTracker(env);
         env.attachTracker(tracker);
 
-        this.proc = new Lattice(env, 4, "SPFA");
+        this.proc = new Lattice(env, 9, "SPFA");
         env.attachProc(proc);
 
         // This IS important, and needs to be done as the last operation in setup
@@ -43,7 +43,7 @@ public class SPFAMultiThreadedTests {
         Graph g = new Graph("data/test_0.txt");
         SSAlgorithm SPFA = new SSAlgorithm(env, g, new SPFA(env));
 
-        Matrix output = SPFA.getAllPairsShortestPaths(g);
+        Matrix output = SPFA.getAllPairsShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_0_ans.txt");
 
@@ -55,7 +55,7 @@ public class SPFAMultiThreadedTests {
         Graph g = new Graph("data/test_1.txt");
         SSAlgorithm SPFA = new SSAlgorithm(env, g, new SPFA(env));
 
-        Matrix output = SPFA.getAllPairsShortestPaths(g);
+        Matrix output = SPFA.getAllPairsShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_1_ans.txt");
 
@@ -67,7 +67,7 @@ public class SPFAMultiThreadedTests {
         Graph g = new Graph("data/test_2.txt");
         SSAlgorithm SPFA = new SSAlgorithm(env, g, new SPFA(env));
 
-        Matrix output = SPFA.getAllPairsShortestPaths(g);
+        Matrix output = SPFA.getAllPairsShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_2_ans.txt");
 
@@ -79,7 +79,7 @@ public class SPFAMultiThreadedTests {
         Graph g = new Graph("data/test_3.txt");
         SSAlgorithm SPFA = new SSAlgorithm(env, g, new SPFA(env));
 
-        Matrix output = SPFA.getAllPairsShortestPaths(g);
+        Matrix output = SPFA.getAllPairsShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_3_ans.txt");
 
@@ -91,7 +91,7 @@ public class SPFAMultiThreadedTests {
         Graph g = new Graph("data/test_4.txt");
         SSAlgorithm SPFA = new SSAlgorithm(env, g, new SPFA(env));
 
-        Matrix output = SPFA.getAllPairsShortestPaths(g);
+        Matrix output = SPFA.getAllPairsShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_4_ans.txt");
 

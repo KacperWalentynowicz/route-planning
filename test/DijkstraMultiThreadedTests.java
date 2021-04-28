@@ -10,13 +10,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import simulator.utils.EvaluationEnvironment;
 import simulator.utils.OpTracker;
-import simulator.utils.TimeEstimator;
+import simulator.utils.Estimator;
 
 public class DijkstraMultiThreadedTests {
     private EvaluationEnvironment env;
     private Lattice proc;
     private OpTracker tracker;
-    private TimeEstimator estimator;
+    private Estimator estimator;
     private final float EPS = 0.001f;
     @BeforeEach
     public void setUp() {
@@ -24,7 +24,7 @@ public class DijkstraMultiThreadedTests {
 
         this.env = new EvaluationEnvironment(8);
 
-        this.estimator = new TimeEstimator(env);
+        this.estimator = new Estimator(env);
         env.attachEstimator(estimator);
 
         this.tracker = new OpTracker(env);
@@ -47,7 +47,7 @@ public class DijkstraMultiThreadedTests {
 
         SSAlgorithm dijkstra = new SSAlgorithm(env, g, new Dijkstra(env));
 
-        Matrix output = dijkstra.getAllPairsShortestPaths(g);
+        Matrix output = dijkstra.getAllPairsShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_0_ans.txt");
 
@@ -59,7 +59,7 @@ public class DijkstraMultiThreadedTests {
         Graph g = new Graph("data/test_1.txt");
         SSAlgorithm dijkstra = new SSAlgorithm(env, g, new Dijkstra(env));
 
-        Matrix output = dijkstra.getAllPairsShortestPaths(g);
+        Matrix output = dijkstra.getAllPairsShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_1_ans.txt");
 
@@ -71,7 +71,7 @@ public class DijkstraMultiThreadedTests {
         Graph g = new Graph("data/test_2.txt");
         SSAlgorithm dijkstra = new SSAlgorithm(env, g, new Dijkstra(env));
 
-        Matrix output = dijkstra.getAllPairsShortestPaths(g);
+        Matrix output = dijkstra.getAllPairsShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_2_ans.txt");
 
@@ -83,7 +83,7 @@ public class DijkstraMultiThreadedTests {
         Graph g = new Graph("data/test_3.txt");
         SSAlgorithm dijkstra = new SSAlgorithm(env, g, new Dijkstra(env));
 
-        Matrix output = dijkstra.getAllPairsShortestPaths(g);
+        Matrix output = dijkstra.getAllPairsShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_3_ans.txt");
 
@@ -95,7 +95,7 @@ public class DijkstraMultiThreadedTests {
         Graph g = new Graph("data/test_4.txt");
         SSAlgorithm dijkstra = new SSAlgorithm(env, g, new Dijkstra(env));
 
-        Matrix output = dijkstra.getAllPairsShortestPaths(g);
+        Matrix output = dijkstra.getAllPairsShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_4_ans.txt");
 

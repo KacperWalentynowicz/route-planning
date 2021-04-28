@@ -45,7 +45,7 @@ public class CannonMatMul extends MatMulPolicy{
     }
 
     @Override
-    public double multMin(Matrix res, Matrix m1, Matrix m2) {
+    public Metrics multMin(Matrix res, Matrix m1, Matrix m2) {
         MasterCore master = proc.getMaster();
         Matrix tmp = res.subMatrix(0, 0, res.N);
         Matrix a = m1.subMatrix(0, 0, res.N);

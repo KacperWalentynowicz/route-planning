@@ -96,7 +96,7 @@ public class Dijkstra extends SSPolicy {
     }
 
     @Override
-    public double getShortestPathsFromSource(GlobalArray result, Graph g, int source) {
+    public Metrics getShortestPathsFromSource(GlobalArray result, Graph g, int source) {
         env.startEvaluation();
         MasterCore master = proc.getMaster();
         result.minimize(master, source, 0.0f);

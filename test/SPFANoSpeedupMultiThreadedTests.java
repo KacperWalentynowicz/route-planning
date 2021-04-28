@@ -12,7 +12,7 @@ public class SPFANoSpeedupMultiThreadedTests {
     private EvaluationEnvironment env;
     private Lattice proc;
     private OpTracker tracker;
-    private TimeEstimator estimator;
+    private Estimator estimator;
     private final float EPS = 0.001f;
     @BeforeEach
     public void setUp() {
@@ -20,7 +20,7 @@ public class SPFANoSpeedupMultiThreadedTests {
 
         this.env = new EvaluationEnvironment(8);
 
-        this.estimator = new TimeEstimator(env);
+        this.estimator = new Estimator(env);
         env.attachEstimator(estimator);
 
         this.tracker = new OpTracker(env);
@@ -43,7 +43,7 @@ public class SPFANoSpeedupMultiThreadedTests {
 
         SSAlgorithm simple_SPFA = new SSAlgorithm(env, g, new SPFANoSpeedup(env));
 
-        Matrix output = simple_SPFA.getAllPairsShortestPaths(g);
+        Matrix output = simple_SPFA.getAllPairsShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_0_ans.txt");
 
@@ -55,7 +55,7 @@ public class SPFANoSpeedupMultiThreadedTests {
         Graph g = new Graph("data/test_1.txt");
         SSAlgorithm simple_SPFA = new SSAlgorithm(env, g, new SPFANoSpeedup(env));
 
-        Matrix output = simple_SPFA.getAllPairsShortestPaths(g);
+        Matrix output = simple_SPFA.getAllPairsShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_1_ans.txt");
 
@@ -67,7 +67,7 @@ public class SPFANoSpeedupMultiThreadedTests {
         Graph g = new Graph("data/test_2.txt");
         SSAlgorithm simple_SPFA = new SSAlgorithm(env, g, new SPFANoSpeedup(env));
 
-        Matrix output = simple_SPFA.getAllPairsShortestPaths(g);
+        Matrix output = simple_SPFA.getAllPairsShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_2_ans.txt");
 
@@ -79,7 +79,7 @@ public class SPFANoSpeedupMultiThreadedTests {
         Graph g = new Graph("data/test_3.txt");
         SSAlgorithm simple_SPFA = new SSAlgorithm(env, g, new SPFANoSpeedup(env));
 
-        Matrix output = simple_SPFA.getAllPairsShortestPaths(g);
+        Matrix output = simple_SPFA.getAllPairsShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_3_ans.txt");
 
@@ -91,7 +91,7 @@ public class SPFANoSpeedupMultiThreadedTests {
         Graph g = new Graph("data/test_4.txt");
         SSAlgorithm simple_SPFA = new SSAlgorithm(env, g, new SPFANoSpeedup(env));
 
-        Matrix output = simple_SPFA.getAllPairsShortestPaths(g);
+        Matrix output = simple_SPFA.getAllPairsShortestPaths(g).getKey();
 
         Matrix model_ans = new Matrix("data/test_4_ans.txt");
 

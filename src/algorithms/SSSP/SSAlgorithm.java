@@ -1,5 +1,6 @@
 package algorithms.SSSP;
 import graphs.*;
+import javafx.util.Pair;
 import simulator.utils.*;
 
 public class SSAlgorithm {
@@ -13,28 +14,23 @@ public class SSAlgorithm {
         this.policy = policy;
     }
 
-    public double getShortestPathsFromSource(GlobalArray distances, Graph g, int source) {
+    public Metrics getShortestPathsFromSource(GlobalArray distances, Graph g, int source) {
         return policy.getShortestPathsFromSource(distances, g, source);
     }
 
-    public GlobalArray getShortestPathsFromSource(Graph g, int source) {
-        GlobalArray distances = new GlobalArray(g.N);
-        policy.getShortestPathsFromSource(distances, g, source);
-        return distances;
-    }
-
-    public Matrix getAllPairsShortestPaths(Graph g) {
+    public Pair<Matrix, Metrics> getAllPairsShortestPaths(Graph g) {
         double total = 0.0;
+        Metrics executionResults = new Metrics(0.0, 0.0);
         Matrix results = g.getAdjMatrix();
 
         for (int source=0; source<g.N; ++source) {
             GlobalArray distances = new GlobalArray(g.N);
-            total += getShortestPathsFromSource(distances, g, source);
+            executionResults.add(getShortestPathsFromSource(distances, g, source));
             for (int dest = 0; dest < g.N; ++dest) {
                 results.data[source][dest] = distances.get(dest);
             }
         }
 
-        return results;
+        return new Pair(results, executionResults);
     }
 }

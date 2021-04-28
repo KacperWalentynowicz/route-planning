@@ -1,6 +1,7 @@
 package algorithms.APSP.MatMul;
 import graphs.Matrix;
+import simulator.utils.Metrics;
 
 public abstract class MatMulPolicy {
-    public abstract double multMin(Matrix res, Matrix a, Matrix b);
+    public abstract Metrics multMin(Matrix res, Matrix a, Matrix b);
 }
