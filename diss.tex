@@ -3,15 +3,20 @@
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage[backend=biber]{biblatex}
-\usepackage[pdfborder={0 0 0}]{hyperref}    % turns references into hyperlinks
+\usepackage[pdfborder={0 0 0}]{hyperref}    % turns
+\usepackage[table,xcdraw]{xcolor}
 \usepackage[margin=25mm]{geometry}  % adjusts page layout
+\usepackage{courier} %% Sets font for listing as Courier.
+\usepackage{listings, xcolor}
 \usepackage{graphicx}  % allows inclusion of PDF, PNG and JPG images
 \usepackage{verbatim}
 \usepackage{docmute}   % only needed to allow inclusion of proposal.tex
 \usepackage{csquotes}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
+\usepackage{dirtree}
 
 \makeatletter
 \def\BState{\State\hskip-\ALG@thistlm}
@@ -26,6 +31,19 @@
                                         % more readable
 
 \addbibresource{sample.bib}
+
+\lstset{
+tabsize = 4, %% Sets tab space width.
+showstringspaces = false, %% Prevents space marking in strings, string is defined as the text that is generally printed directly to the console.
+numbers = left, %% Displays line numbers on the left.
+commentstyle = \color{green}, %% Sets comment color.
+keywordstyle = \color{blue}, %% Sets  keyword color.
+stringstyle = \color{red}, %% Sets  string color.
+rulecolor = \color{black}, %% Sets frame color to avoid being affected by text color.
+basicstyle = \small \ttfamily , %% Sets listing font and size.
+breaklines = true, %% Enables line breaking.
+numberstyle = \tiny,
+}
 
 \begin{document}
 
@@ -80,35 +98,7 @@ The original aim of the project was to study several existing approaches to exte
 
 \section*{Work Completed}
 
-I have successfully implemented the tool which allows simulation
-kwalentynowicz12: old algorithms were not designed with sequential model in mind, and may exhibit natural parallelism
-Mar 4, 2021 3:57 PM
-Hit Enter to reply
-kwalentynowicz12: 1.8: symmetry, homogeneity and embedding
-Mar 4, 2021 4:22 PM
-Hit Enter to reply
-kwalentynowicz12: Kacper, describe the claffication of parallel computers - Flynn, and more recent. Flynns, remain useful. See pages 8-9 of my book. Characteristic of the problem lends itself to SIMD or MIMD.
-The cores are connected via routeing network which again plays an important role depending on the communication required in the problem itself.
-Mar 10, 2021 11:13 AM
-kwalentynowicz12: I will introduce Flynn's classification in preparation chapter. In introduction is too in-depth
-Apr 22, 2021 10:18 AM
-Hit Enter to reply
-kwalentynowicz12: perhaps not the most important ones? @David
-Apr 21, 2021 12:24 PM
-Hit Enter to reply
-kwalentynowicz12: Describe in Implementation why this feature is actually not trivial to achieve
-Apr 22, 2021 3:59 PM
-Hit Enter to reply
-kwalentynowicz12: perhaps some better version of layout is possible here?
-Apr 22, 2021 4:00 PM
-Hit Enter to reply
-You: This is important ......
-Apr 23, 2021 11:42 AM • Edit
-Hit Enter to reply
-Current file
-Overview
-2
- of algorithms on various parallel architectures. Then, I have met the other goals of the project by implementing and evaluating several parallel adaptations of known shortest path algorithms: Dijkstra's algorithm, Matrix multiplication algorithm and SPFA algorithm. I have then compared the parallel approaches taking into account both theoretical merits and disadvantages, as well as empirical evaluation on real-world road networks.
+I have successfully implemented the tool which allows simulation of algorithms on various parallel architectures. Then, I have met the other goals of the project by implementing and evaluating several parallel adaptations of known shortest path algorithms: Dijkstra's algorithm, Matrix multiplication algorithm and SPFA algorithm. I have then compared the parallel approaches taking into account both theoretical merits and disadvantages, as well as empirical evaluation on real-world road networks.
 
 \section*{Special Difficulties}
 
@@ -147,7 +137,6 @@ Last but not least, I would like to thank my wife Marta, for her insightful comm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Introduction}
 How much algorithm redesign is needed for parallel architectures? It is certainly not an easy question to answer. For sequential machines, various No Free Lunch theorems \cite{free-lunch} establish that there is no algorithm perfect for all applications. This phenomenon is  visible in parallel systems where communication or synchronization costs may outweigh advantages arising from parallelization, especially if the problem instance is not large. Although there exist attempts at writing software capable of performing efficient parallelizations (such as MIT's pMapper \cite{pmapper}), designing efficient parallel algorithms remains an important challenge. In my project, I have investigated known sequential algorithms for the shortest path problem and considered their different parallel adaptations.
-(DISCUSS)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Importance of parallel algorithms}
 During several previous decades of computing, hardware engineers have been able to deliver better processors as quickly as Gordon Moore had anticipated in the 1970s. Recently, it seems like the boundaries can no longer be pushed as the Moore's Law has slowed down\cite{moore-law}, and programmers will need to resort to alternative ways of achieving speedup. The natural solution is using multiple workers; cores on a single machine or simply several machines communicating together. The most important benefits are energy efficiency and scalability. 
@@ -199,7 +188,7 @@ Some algorithms (such as Dijkstra's) are notoriously difficult to parallelize du
 \section{Starting point}
 Prior to the project, I did not have much experience with parallel programming. Some principles and methods have been outlined in \textit{Concurrent and Distributed Systems} part IB course.
 
-Starting point of the project, was therefore, nearly from level zero. Apart from reading shallowly about possible parallelizations of Dijkstra's algorithm. The only code which I had implemented, were sequential versions of Dijkstra's and SPFA algorithms to serve as a proof-of-concept that SPFA can compete with Dijkstra's algorithm in terms of performance even in the standard setup of sequential machines\footnote{See the beginning of $2.3.3$ for details}.
+Starting point of the project, was therefore, nearly from level zero. Apart from reading shallowly about possible parallelizations of Dijkstra's algorithm. The only code which I had implemented, were sequential versions of Dijkstra's and SPFA algorithms to serve as a proof-of-concept that SPFA can compete with Dijkstra's algorithm in terms of performance even in the standard setup of sequential machines\footnote{See the section $2.3.3$ for details}.
 
 \section{Requirements analysis}
 As described in the introduction, parallel algorithms are an interesting, but challenging topic. Because performance of algorithms is heavily influenced by system architecture, my project needs to consider these. Following initial analysis of the problem, I have decided that a key component of the project would be a simulator providing an evaluation environment for the algorithms.
@@ -299,7 +288,7 @@ Dijkstra's algorithm is one of the most well known computer science algorithms t
 
 There is a notable difficulty in parallelizing this algorithm - in line $7$ nodes are being taken one after another in different iterations. There are lots of data dependencies, because changes in $dist$ may affect which nodes in the subsequent iterations. Nonetheless, there have been attempts at efficient parallelizations.
 
-$Q$ is a priority queue, typically implemented with a Fibonacci heap to guarantee $O(|E| + |V| log |V|)$ runtime. A simple approach for a parallel speedup would be to split the slow computation of selecting the vertex with minimal distance. In the initialization phase, we would like to partition the nodes for our workers, so that each node has exactly one worker assigned to it. Therefore, $assigned(u)$ be a function which returns the worker to whom node $u$ was assigned. Whenever line $7$ is executed, each of the workers would calculate minimal distance vertex independently, and afterwards they would communicate to find the global minimal distance vertex.
+$Q$ is a priority queue, typically implemented with a Fibonacci heap to guarantee $O(|E| + |V| log |V|)$ runtime. A simple approach for a parallel speedup would be to split the slow computation of selecting the vertex with minimal distance. In the initialization phase, we would like to partition the nodes for our workers, so that each node has exactly one worker assigned to it. Let, $assigned(u)$ be a function which returns the worker to whom node $u$ was assigned. Whenever line $7$ is executed, each of the workers would calculate minimal distance vertex independently, and afterwards they would communicate to find the global minimal distance vertex.
 
 There is a subtlety here: when a successful relaxation of edge $(u,v,w)$ is performed in line $11$, the worker $assigned(v)$ must be made aware of this change. This can be resolved either by sending a message from $assigned(u)$ to $assigned(v)$, or by $assigned(v)$ periodically scanning through distances of vertices it is responsible for rather than keeping them in a priority queue. Let's summarize the approach in a pseudocode.
 
@@ -342,7 +331,7 @@ Crauser et al. (1998)\cite{dijkstra} prove that this optimization reduces with h
 \subsection{Shortest Path Faster Algorithm}
 Although one can extract a lot of parallelism from such a highly sequential algorithm like Dijkstra's, it may be better to design an algorithm with parallelism in mind. 
 
-A limiting factor of Dijkstra's algorithm is the strong constraint that a vertex may never be relaxed again, and maintaining a priority queue. A relatively unpopular algorithm which originated in the $1950$s\footnote{According to Wikipedia, the exact description (with a name algorithm D) can be found in:  Moore, Edward F. (1959).  ”The shortest path through a maze”.  Proceedings of the International Symposium on the Theory of Switching.  Harvard University Press.  pp.  285–292. I have not managed to find the access to this resource and verify this information myself.} lacks these bottlenecks. A simple version of this algorithm abandons priority in the queue and performs relaxations while there are some possible.
+Two most limiting factors of Dijkstra's algorithm are: the strong constraint that a vertex may never be relaxed again, and maintaining a priority queue. A relatively unpopular algorithm which originated in the $1950$s\footnote{According to Wikipedia, the exact description (with a name algorithm D) can be found in:  Moore, Edward F. (1959).  ”The shortest path through a maze”.  Proceedings of the International Symposium on the Theory of Switching.  Harvard University Press.  pp.  285–292. I have not managed to find the access to this resource and verify this information myself.} lacks these bottlenecks. A simple version of this algorithm abandons priority in the queue and performs relaxations while there are some possible.
 
 \begin{algorithm}
 \caption{Chaotic relaxation}\label{chaotic}
@@ -394,7 +383,7 @@ Correctness of the algorithm is obvious - the relaxations are going to be perfor
 \end{algorithmic}
 \end{algorithm}
 
-This tiny change gives an empirically fast algorithm, which is believed to work in $O(|E|)$ on random graphs. In recent years, SPFA has been popularized by fans of algorithmic competitions\footnote{and this is how I have heard about it first}, and it even has a Wikipedia page\footnote{https:\/\/en.wikipedia.org\/wiki\/Shortest\_Path\_Faster\_Algorithm}, but sources there appear to be several niche websites citing one another. Analyzing mathematically the expected runtime of SPFA is outside the scope of this project. Nonetheless, before the project I have carried out experiments to check behaviour of this algorithm on a large graph - California Road Network collected by various researches and introduced in \cite{CRN}. Nodes were put into the queue $7$ times on average, and the runtime was faster than Dijkstra's algorithm's. The initial experiments showed that not only was SPFA fast, but also promising in terms of parallel execution. This is because there are little restrictions on the order in which relaxations should be performed, which makes it suitable for parallel implementation.
+This tiny change gives an empirically fast algorithm, which is believed to work in $O(|E|)$ on random graphs. In recent years, SPFA has been popularized by fans of algorithmic competitions\footnote{and this is how I have heard about it first}, and it even has a Wikipedia page\footnote{https://en.wikipedia.org/wiki/Shortest\_Path\_Faster\_Algorithm}, but sources there appear to be several niche websites citing one another. Analyzing mathematically the expected runtime of SPFA is outside the scope of this project. Nonetheless, before the project I have carried out experiments to check behaviour of this algorithm on a large graph - California Road Network collected by various researches and introduced in \cite{CRN}. Nodes were put into the queue $7$ times on average, and the runtime was faster than Dijkstra's algorithm's. The initial experiments showed that not only was SPFA fast, but also promising in terms of parallel execution. This is because there are little restrictions on the order in which relaxations should be performed, which makes it suitable for parallel implementation.
 
 Devising a parallel version is very natural, and uses a similar mapping of graph nodes to cores as parallel Dijkstra. 
 
@@ -434,6 +423,7 @@ In section $2.3$ the algorithms calculate only the array of shortest distances, 
 We are going to introduce a predecessor array $pred[]$ which will maintain previous node on the shortest path. For Dijkstra's algorithm and SPFA it is sufficient to update $pred[]$ alongside with relaxations: when we are applying an update $dist[v] = dist[u] + w$, we also set $pred[v] = u$.
 
 In case of MatMul the change is marginal, too. For initialization:$\displaystyle\mathop{\forall}_{a,b}pred[a][b] = a$. For the second phase, $min(newdist[a][b],dist[a][c]+dist[c][b])$ can be rewritten equivalently, after which it's clear when to update predecessor matrix:
+
 \begin{algorithm}
 \begin{algorithmic}[1]
     \If{$newdist[a][b] > dist[a][c] + dist[c][b]$}
@@ -484,38 +474,119 @@ Let's finish the chapter with a demonstration of OSMNX's usefulness. Creating th
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Implementation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Software Development practices}
-here I describe what practices I intended to follow: why Java, why python for plotting and osmnx, frequent commit policy, backups on Google Drive
+
+\section{Software Development - practices and tools}
+My project consisted of two parts - developing the simulator to run the algorithms, and coding the actual parallel algorithms in the simulator. I consider my work to have been done in a spiral-like method of software development. Although I had tried to carefully design the simulator by anticipating features needed by the algorithms, there were a couple bits which needed modifications. Additionally, algorithms themselves allowed incremental improvements - initially do a part of code in a suboptimal, but easier way, then fix the shortcomings in the later versions.  
+
+The natural choice for implementing the project was Java. The language has excellent support for writing concurrent (I have used \textit{java.util.concurrent} extensively throughout the project) and object-oriented programs. It also had the pluses of being taught in Part IA and IB courses, so I didn't need to spend time learning a new language for the project.
+
+But Java also has drawbacks, and I couldn't imagine doing evaluation in Java. The results of running the algorithms were produced in the form of CSV files, so that I could then import them in Python easily. Python was a much better choice for doing data manipulations, comparisons, plotting. I had to use Python anyway if I wanted to make use of the aforementioned OSMnx module (I don't think that its ports to other languages exist). Altogether, I have written the entire project in Java with the exception of two Python scripts: \textit{graph\_download.py} and \textit{evaluation.py}. I have also made heavy use of the JetBrains IDEs (IntelliJ and PyCharm). I especially appreciated their capabilities for automatically resolving dependencies, imports and refactorings with usage search. Obeying builtin linter suggestions made me confident that the code follows good stylistic conventions.
+
+Throughout the project I have been meeting regularly with my supervisors. Usually had a meeting once a week with either Dr Modi (Tuesdays), or Dr Greaves (Wednesdays). Additionally, during Michealmas and Lent terms my Directors of Studies held short ($10$ minutes) update meetings, where I would present recent developments in the project. When doing the work itself, I tried to follow the division suggested in my project proposal - biweekly sprints, but a few changes arose. The simulator work took longer than I had anticipated (partially because I made it much more sophisticated than originally planned), but later I caught up as the work on algorithms went faster than anticipated. I have also switched the order of implementing parallel Dijkstra and MatMul algorithms, as the latter seemed less  error-prone.  
+
+I have also made use of tools with version-control systems to ensure that nothing gets lost. The code written in my GitHub repository was frequently committed and pushed, so that the changes persist even in case of hardware failures. For writing my dissertation I have used Overleaf - a free online \LaTeX editor which allows real-time preview and collaboration on the documents, annotating the text with pop-up comments and even features a version control system. Although I have been using the tool for many years and I generally trust Overleaf's cloud, the dissertation is a good moment to become paranoid - so I have been doing additional backups daily on my machine and pushing the latest version to GitHub to be 101\% sure of not losing the work.
+
+\section{Repository overview}
+Let's start with the figure which gives a directory structure of my project. Crucially, the diagram does not mention every single Java class. I have followed a modular approach where classes have single responsibilities. The diagram is much clearer if I include just example files. A full diagram is provided as Appendix A. Every piece source code present in that diagram was written by me, except for \textit{FibonacciHeap.java} whose author is Keith Schwarz\footnote{htiek@cs.stanford.edu}. Throughout the chapter I am going to describe what various building blocks are, what assumptions they take, and how they interact with each other.
+
+\dirtree{%
+.1 route-planning.
+.2 data.
+.3 cambridge.graphml.
+.3 cambridge.txt.
+.2 src.
+.3 algorithms.
+.4 APSP.
+.5 MatMul.
+.6 CannonMatMul.java.
+.4 SSSP.
+.5 SSSPAlgorithm.java.
+.5 Dijkstra.
+.6 Dijkstra.java.
+.6 DijkstraCore.java.
+.5 SPFA.
+.6 SPFA.java.
+.6 SPFACore.java.
+.3 graphs.
+.4 graph\_download.ipynb.
+.4 Graph.java.
+.3 simulator.
+.4 internal.
+.5 TaskRunner.java.
+.5 Scheduler.java.
+.4 utils.
+.5 Message.java.
+.5 EvaluationEnvironment.java.
+.5 LocalArray.java.
+.2 test.
+.3 DijkstraMultiThreadedTests.java .
+.3 evaluation.ipynb.
+}
 
 \section{Simulator}
-
 \subsection{Overview}
-addressing the requirements, high-level ideas - message passing, primitives, etc. CLEARLY describe which assumptions are taken.
+The simulator provides an evaluation environment for the algorithms to run on. In this section I am describing its implementation, as well as the functions it provides for coding algorithms. Looking from a very high-level perspective, a parallel system consists of cores executing various operations provided. Additionally, a master core is introduced which is helpful for doing bookkeeping work.
+The algorithms are expressed in threaded code\footnote{not to be confused with multithreading} - they consist almost exclusively of calls to subroutines provided. Each core has access to its own local memory. One assumption taken is that local memories are insufficient to hold the entire graphs, but the graphs fit the total memory of the cores (rather than streamed through some external storage). Therefore, the cores need to communicate their data to other cores. They can do it through passing messages. Let's now proceed to describing the building blocks of the simulator.
 
-\subsection{Description of building blocks}
-I describe what building blocks are there in my simulator, and which are hidden from the outside world but important
+\subsection{Tasks and Phases}
+Since the early days of computing, algorithms are expressed as sequences of phases in which certain tasks are done. In the simulator \texttt{Tasks} are classes for chunks of work to be done. They have a method \texttt{execute()} which allows to specify the operations to be done for the core, as in the example which uses the provided simple matrix multiplication subroutine to multiply two matrices stored in local memory of some core. 
 
-\subsubsection{Tasks and Phases}
-Task as a main building block. No coroutines, so this solution.
+\begin{lstlisting}[language = Java , frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+Task multiply_matrices = new Task(myCore) {
+    @Override
+    public void execute() {
+        myCore.simpleMult(myCore.c, myCore.a, myCore.b);
+    }
+};
+\end{lstlisting}
 
-Naturally occurring in algorithms - dependencies between phases, cannot start running phase N+1 until N is finished.
 
-\subsubsection{Scheduler and task runners}
-Like a thread-pool. Abstracting away from number of threads used in our algorithms. Hidden from the outside world. 
+\texttt{Tasks} are grouped into \texttt{Phases}. Under the hood, \texttt{Phase} class has a thread-safe queue of Tasks and almost nothing more.
 
-\subsubsection{Cores and processor architectures}
+Every sensible system should provide guarantees when effects of certain operations are visible - it's unreasonable to assume they occur immediately. I have chosen the bulk-synchronous model: the tasks cannot assume anything about effects of Tasks from the same phase, but they can assume that effects of Tasks from previous phases have already occurred. An example consequence is that when cores need to pass some data cyclically, sending the data should be done in one phase and receiving the data in the next phase.
+
+Additionally, there is a functionality for a task to be repeated. This feature is added to support types of algorithms which operate until there are no changes.
+
+One subtlety arose in the design process. The single-threaded debug mode would deadlock if any of the Tasks contained operations was blocking. I have investigated the possibility of using a Java package for coroutines to allow the execution to be suspended and resumed, but decided that adding it would be overly complicated for the needs and sticked to the assumption that Tasks execute non-blocking methods which run to completion (but they may, of course, in parallel with other tasks). In hindsight, this design decision did not turn out constraining.
+
+\subsection{Scheduler and task runners}
+The important requirement was that the algorithms are described in terms of operations on abstract cores. \texttt{Scheduler} and \texttt{Task runners} are responsible of handling that and running the computation on the physical machine. The \texttt{Task runner} class extends a java Thread and provides an ability to run tasks from a phases. \texttt{Scheduler} spawns these runners and manages them to ensure that the environment does not deadlock. Once all the tasks from a phase are executed, the Scheduler instructs the runners to finish polling new tasks from this phase and switch to the next one instead (or issues the command for runners to terminate).
+
+The asynchronous execution posed some challenges. Runners need to poll new tasks from the phase in a non-blocking way. Initially I just borrowed my own implementation of a queue done in practical 3 of FurtherJava course last year, but ultimately I've changed it to a  \texttt{ConcurrentLinkedQueue} from \texttt{java.util.concurrent} package, as it had the desired behaviour. Once all the running threads receive null tasks in the same phase, the phase is finished.
+
+The operation of scheduler and task runners follows closely the thread pool design pattern. Summing up, the implementation is hidden in \texttt{simulator/internal}; the programmer just needs to specify an appropriate number of threads. For my machine the optimal number is $8$, but better computers may benefit from using more threads. 
+
+\subsection{Cores and processor architectures}
 Arbitrarily powerful entities. Every operation is executed by some core.
 
-\subsubsection{Trackers and Estimators}
+\subsection{Trackers and Estimators}
 Track operations and calculate metrics. Easy changes - just supply a different Estimator class if you want different penalties (addressing requirements... again!).
 
-\subsubsection{Evaluation environment}
+\subsection{Evaluation environment}
 Describes the class env, and how the components interact with each other as a system
 
 
 \section{Parallel matrix multiplication}
 I'm thinking whether moving challenges to this section here would make more sense... 
 how I addressed the challenges to implement parallel matrix multiplication
+
+$\begin{bmatrix}
+A_{00} \boxtimes B_{00} & A_{01} \boxtimes B_{11} & A_{02} \boxtimes B_{22} \\
+A_{11} \boxtimes B_{10} & A_{12} \boxtimes B_{21} & A_{10} \boxtimes B_{02} \\
+A_{22} \boxtimes B_{20} & A_{20} \boxtimes B_{01} & A_{21} \boxtimes B_{12} \\
+\end{bmatrix}$
+
+$\begin{bmatrix}
+A_{01} \boxtimes B_{10} & A_{02} \boxtimes B_{21} & A_{00} \boxtimes B_{02} \\
+A_{12} \boxtimes B_{20} & A_{10} \boxtimes B_{01} & A_{11} \boxtimes B_{12} \\
+A_{20} \boxtimes B_{00} & A_{21} \boxtimes B_{11} & A_{22} \boxtimes B_{22} \\
+\end{bmatrix}$
+
+$\begin{bmatrix}
+A_{02} \boxtimes B_{20} & A_{00} \boxtimes B_{01} & A_{01} \boxtimes B_{12} \\
+A_{10} \boxtimes B_{00} & A_{11} \boxtimes B_{11} & A_{12} \boxtimes B_{22} \\
+A_{21} \boxtimes B_{10} & A_{22} \boxtimes B_{21} & A_{20} \boxtimes B_{02} \\
+\end{bmatrix}$
 
 \section{Parallel Dijkstra's algorithm}
 there are many many challenges here, how can we implement this efficiently
@@ -558,6 +629,75 @@ What else interesting can be done
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % the appendices
 \appendix
+
+\chapter{Detailed repository overview diagram}
+\dirtree{%
+.1 route-planning.
+ .2 data.
+ .2 src.
+  .3 algorithms.
+   .4 APSP.MatMul.
+    .5 CannonCore.java.
+    .5 CannonMatMul.java.
+    .5 MatMulAlgorithm.java.
+    .5 MatMulPolicy.java.
+   .4 SSSP.
+   .4 Dijkstra.
+    .5 Dijkstra.java.
+    .5 DijkstraCore.java.
+    .5 DijkstraNoSpeedup.java.
+   .4 SPFA.
+    .5 SPFA.java.
+    .5 SPFACore.java.
+    .5 SPFANoSpeedup.java.
+   .4 SSAlgorithm.java.
+   .4 SSPolicy.java.
+  .3 graphs.
+   .4 cache.
+    .5 Assignment.java.
+    .5 Edge.java.
+    .5 evaluation.ipynb.
+    .5 Graph.java.
+    .5 graph\_download.ipynb.
+    .5 Matrix.java.
+   .4 simulator.
+    .5 internal.
+     .6 CommunicationHandler.java.
+     .6 ConcurrentQueue.java.
+     .6 ConcurrentQueueImpl.java.
+     .6 Scheduler.java.
+     .6 SingleConnectionHandler.java.
+     .6 TaskRunner.java.
+    .5 utils.
+     .6 Core.java.
+     .6 Estimator.java.
+     .6 EvaluationEnvironment.java.
+     .6 FibonacciHeap.java.
+     .6 GlobalArray.java.
+     .6 GlobalBitset.java.
+     .6 GlobalQueue.java.
+     .6 Lattice.java.
+     .6 LocalArray.java.
+     .6 LocalHeap.java.
+     .6 MasterCore.java.
+     .6 Message.java.
+     .6 Metrics.java.
+     .6 OpTracker.java.
+     .6 Phase.java.
+     .6 ProcessorArchitecture.java.
+     .6 Task.java.
+ .2 test.
+  .3 DijkstraMultiThreadedTests.java.
+  .3 DijkstraNoSpeedupMultiThreadedTests.java.
+  .3 DijkstraNoSpeedupSingleThreadedTests.java.
+  .3 Evaluation.java.
+  .3 MatMulAlgorithmMultiThreadedTests.java.
+  .3 MatMulAlgorithmSingleThreadedTests.java.
+  .3 SPFAMultiThreadedTests.java.
+  .3 SPFANoSpeedupMultiThreadedTests.java.
+}
+
+\noindent Directory \texttt{data/} contains data generated automatically generated with help of OSMnx, but it would be pointless to include those.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\chapter{Latex source}
