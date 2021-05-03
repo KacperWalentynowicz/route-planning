@@ -7,14 +7,12 @@ import java.util.ArrayList;
 public class Core {
 
     private final int coreID;
-    private final Tracker tracker;
     private ArrayList<Core> neighbors;
     private EvaluationEnvironment env;
 
     public Core(EvaluationEnvironment env, int coreID) {
         this.env = env;
         this.coreID = coreID;
-        this.tracker = env.getTracker();
         neighbors = new ArrayList<>();
     }
 
@@ -35,7 +33,11 @@ public class Core {
     }
 
     public float getCurrentTime() {
-        return tracker.getTime(this);
+        return env.getTracker().getTime(this);
+    }
+
+    public EvaluationEnvironment getEnv() {
+        return this.env;
     }
 
     // Basic ALU operations supported for each core:
@@ -43,50 +45,47 @@ public class Core {
     // Either dest := a op b
     // or dest := dest op a, depending on the number of arguments used
 
-    public Tracker getTracker() {
-        return this.tracker;
-    }
 
     public float add(float a, float b) {
-        tracker.trackALU(this);
+        env.getTracker().trackALU(this);
         return a + b;
     }
 
     public float sub(float a, float b) {
-        tracker.trackALU(this);
+        env.getTracker().trackALU(this);
         return a-b;
     }
 
     public float mul(float a, float b) {
-        tracker.trackALU(this);
+        env.getTracker().trackALU(this);
         return a * b;
     }
 
 
     public float div(float a, float b) {
-        tracker.trackALU(this);
+        env.getTracker().trackALU(this);
         return a / b;
     }
 
     public float min(float a, float b) {
-        tracker.trackALU(this);
+        env.getTracker().trackALU(this);
         return Math.min(a, b);
     }
 
     public float max(float a, float b) {
-        tracker.trackALU(this);
+        env.getTracker().trackALU(this);
         return Math.max(a, b);
     }
 
     public void sendData(Core to, Message m) {
         m.setTimeSend(getCurrentTime());
-        tracker.trackSend(this, m);
+        env.getTracker().trackSend(this, m);
         env.getCommunicationHandler().sendMessage(this, to, m);
     }
 
     public Message receiveData(Core from) {
         Message m = env.getCommunicationHandler().receiveMessage(from, this);
-        tracker.trackReceive(from, this, m);
+        env.getTracker().trackReceive(from, this, m);
         return m;
     }
 

@@ -10,19 +10,19 @@ public class LocalHeap<T> extends FibonacciHeap<T> {
 
     @Override
     public Entry<T> enqueue(T value, double priority) {
-        core.getTracker().trackPQOperation(core);
+        core.getEnv().getTracker().trackPQOperation(core);
         return super.enqueue(value, priority);
     }
 
     @Override
     public Entry<T> dequeueMin() {
-        core.getTracker().trackPQOperation(core);
+        core.getEnv().getTracker().trackPQOperation(core);
         return super.dequeueMin();
     }
 
     @Override
     public void decreaseKey(Entry<T> entry, double newPriority) {
-        core.getTracker().trackPQOperation(core);
+        core.getEnv().getTracker().trackPQOperation(core);
         super.decreaseKey(entry, newPriority);
     }
 }

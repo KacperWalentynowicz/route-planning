@@ -9,13 +9,11 @@ import static java.lang.Math.max;
 
 public class Tracker {
     private final EvaluationEnvironment env;
-    private final Estimator estimator;
     private ConcurrentMap <Core, Float> timeOnCores;
 
 
     public Tracker(EvaluationEnvironment env) {
         this.env = env;
-        this.estimator = env.getEstimator();
     }
 
     public void reset(float value) {
@@ -47,30 +45,30 @@ public class Tracker {
     }
 
     public void trackMem(Core core) {
-        timeOnCores.compute(core, (key, value) -> value + estimator.getMemTime(core));
+        timeOnCores.compute(core, (key, value) -> value + env.getEstimator().getMemTime(core));
     }
 
     // TODO: change this into behaviour different than trackMem
     public void trackSharedMem(Core core) {
-        timeOnCores.compute(core, (key, value) -> value + estimator.getMemTime(core));
+        timeOnCores.compute(core, (key, value) -> value + env.getEstimator().getMemTime(core));
     }
 
     public void trackPQOperation(Core core) {
-        timeOnCores.compute(core, (key, value) -> value + estimator.getPQTime(core));
+        timeOnCores.compute(core, (key, value) -> value + env.getEstimator().getPQTime(core));
     }
     public void trackALU(Core core) {
-        timeOnCores.compute(core, (key, value) -> value + estimator.getALUTime(core));
+        timeOnCores.compute(core, (key, value) -> value + env.getEstimator().getALUTime(core));
     }
 
     public void trackSend(Core from, Message m) {
-        timeOnCores.compute(from, (key, value) -> value + estimator.getPackageTime(from, m));
+        timeOnCores.compute(from, (key, value) -> value + env.getEstimator().getPackageTime(from, m));
     }
 
     public void trackReceive(Core from, Core at, Message m) {
-        float t_available = m.getTimeSend() + estimator.getJourneyTime(from, at);
+        float t_available = m.getTimeSend() + env.getEstimator().getJourneyTime(from, at);
         //the message is not available earlier than this time, but it may be already waiting at this core
 
-        float t_ready = max(t_available, timeOnCores.get(at)) + estimator.getUnPackageTime(at, m);
+        float t_ready = max(t_available, timeOnCores.get(at)) + env.getEstimator().getUnPackageTime(at, m);
         timeOnCores.put(at, t_ready);
     }
 }

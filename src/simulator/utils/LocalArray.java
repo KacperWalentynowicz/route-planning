@@ -17,13 +17,13 @@ public class LocalArray<E> extends ArrayList<E> {
 
     @Override
     public E get(int index) {
-        core.getTracker().trackMem(core);
+        core.getEnv().getTracker().trackMem(core);
         return super.get(index);
     }
 
     @Override
     public E set(int index, E element) {
-        core.getTracker().trackMem(core);
+        core.getEnv().getTracker().trackMem(core);
         return super.set(index, element);
     }
 }

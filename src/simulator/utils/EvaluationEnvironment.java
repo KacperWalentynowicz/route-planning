@@ -22,13 +22,16 @@ public class EvaluationEnvironment {
         scheduler.finishRunners();
     }
 
-    public EvaluationEnvironment(ProcessorArchitecture proc, Estimator estimator, Tracker tracker, int N_THREADS) {
+    public EvaluationEnvironment(ProcessorArchitecture proc, Estimator estimator,int N_THREADS) {
         this.proc = proc;
         this.estimator = estimator;
-        this.tracker = tracker;
         scheduler = new Scheduler(N_THREADS);
         comm = new CommunicationHandler(proc);
         parallelModes = new ConcurrentHashMap<>();
+
+        this.tracker = new Tracker(this);
+        this.tracker.reset(0.0f);
+
     }
 
     public EvaluationEnvironment(int N_THREADS) {

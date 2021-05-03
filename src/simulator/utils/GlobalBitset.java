@@ -15,12 +15,12 @@ public class GlobalBitset extends AtomicReferenceArray<Boolean> {
     }
 
     public Boolean get(Core core, int i) {
-        core.getTracker().trackSharedMem(core);
+        core.getEnv().getTracker().trackSharedMem(core);
         return super.get(i);
     }
 
     public void set(Core core, int i, Boolean b) {
-        core.getTracker().trackSharedMem(core);
+        core.getEnv().getTracker().trackSharedMem(core);
         synchronized (sumOfEntries) {
             Boolean prev = super.get(i);
             if (prev != b) {

@@ -15,17 +15,17 @@ public class GlobalArray extends AtomicReferenceArray<Float> {
     }
 
     public Float get(Core core, int i) {
-        core.getTracker().trackSharedMem(core);
+        core.getEnv().getTracker().trackSharedMem(core);
         return super.get(i);
     }
 
     public void minimize(Core core, int i, Float value) {
-        core.getTracker().trackSharedMem(core);
+        core.getEnv().getTracker().trackSharedMem(core);
         super.getAndUpdate(i, aFloat -> ((float)value <= (float)aFloat) ? value : aFloat);
     }
 
     public void maximize(Core core, int i, Float value) {
-        core.getTracker().trackSharedMem(core);
+        core.getEnv().getTracker().trackSharedMem(core);
         super.getAndUpdate(i, aFloat -> ((float)value >= (float)aFloat) ? value : aFloat);
     }
 
