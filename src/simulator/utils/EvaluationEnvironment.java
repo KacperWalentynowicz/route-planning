@@ -80,6 +80,8 @@ public class EvaluationEnvironment {
     }
     public void runPhase(Phase phase) {
         scheduler.runPhase(phase);
-        tracker.synchronizeAfterPhase();
+        if (phase.synchronizeAfter) {
+            tracker.synchronizeAfterPhase();
+        }
     }
 }
