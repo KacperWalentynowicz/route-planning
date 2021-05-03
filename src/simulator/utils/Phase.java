@@ -2,14 +2,16 @@ package simulator.utils;
 
 import simulator.internal.*;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 public class Phase {
     private final int id;
-    private ConcurrentQueue<Task> taskQueue;
+    private ConcurrentLinkedQueue<Task> taskQueue;
     public final String name;
     public Phase(String name, int id) {
         this.name = name;
         this.id = id;
-        taskQueue = new ConcurrentQueueImpl<>();
+        taskQueue = new ConcurrentLinkedQueue<>();
     }
 
     public int getID() {
@@ -17,10 +19,10 @@ public class Phase {
     }
 
     public void addTask(Task t) {
-        taskQueue.put(t);
+        taskQueue.add(t);
     }
 
     public Task getTask() {
-        return taskQueue.take();
+        return taskQueue.poll();
     }
 }

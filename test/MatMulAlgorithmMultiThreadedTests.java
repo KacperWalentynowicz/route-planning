@@ -5,14 +5,13 @@ import graphs.*;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 
 public class MatMulAlgorithmMultiThreadedTests{
     private EvaluationEnvironment env;
     private Lattice proc;
-    private OpTracker tracker;
+    private Tracker tracker;
     private Estimator estimator;
     private final float EPS = 0.001f;
     @BeforeEach
@@ -24,7 +23,7 @@ public class MatMulAlgorithmMultiThreadedTests{
         this.estimator = new Estimator(env);
         env.attachEstimator(estimator);
 
-        this.tracker = new OpTracker(env);
+        this.tracker = new Tracker(env);
         env.attachTracker(tracker);
 
         this.proc = new Lattice(env, 4, "Cannon");

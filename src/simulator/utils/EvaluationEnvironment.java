@@ -12,7 +12,7 @@ public class EvaluationEnvironment {
     private CommunicationHandler comm;
     private ConcurrentMap <Core, Boolean> parallelModes;
     private Estimator estimator;
-    private OpTracker tracker;
+    private Tracker tracker;
 
     public void startEvaluation() {
         scheduler.startRunners();
@@ -22,7 +22,7 @@ public class EvaluationEnvironment {
         scheduler.finishRunners();
     }
 
-    public EvaluationEnvironment(ProcessorArchitecture proc, Estimator estimator, OpTracker tracker, int N_THREADS) {
+    public EvaluationEnvironment(ProcessorArchitecture proc, Estimator estimator, Tracker tracker, int N_THREADS) {
         this.proc = proc;
         this.estimator = estimator;
         this.tracker = tracker;
@@ -45,7 +45,7 @@ public class EvaluationEnvironment {
         this.estimator = estimator;
     }
 
-    public void attachTracker(OpTracker tracker) {
+    public void attachTracker(Tracker tracker) {
         this.tracker = tracker;
     }
 
@@ -55,7 +55,7 @@ public class EvaluationEnvironment {
 
     public Estimator getEstimator() { return estimator; }
 
-    public OpTracker getTracker() { return tracker; }
+    public Tracker getTracker() { return tracker; }
 
     public CommunicationHandler getCommunicationHandler() {
         return comm;

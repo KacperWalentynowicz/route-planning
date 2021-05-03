@@ -1,14 +1,13 @@
 package simulator.utils;
 
 import graphs.Matrix;
-import simulator.internal.CommunicationHandler;
 
 import java.util.ArrayList;
 
 public class Core {
 
     private final int coreID;
-    private final OpTracker tracker;
+    private final Tracker tracker;
     private ArrayList<Core> neighbors;
     private EvaluationEnvironment env;
 
@@ -44,7 +43,7 @@ public class Core {
     // Either dest := a op b
     // or dest := dest op a, depending on the number of arguments used
 
-    public OpTracker getTracker() {
+    public Tracker getTracker() {
         return this.tracker;
     }
 

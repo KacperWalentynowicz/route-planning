@@ -8,7 +8,7 @@ public class Estimator {
     private float UNPACK = 2.0f;
     private float JOURNEY = 20.0f;
     private float MEM = 0.5f;
-    private float PQ = 100.0f;
+    private float PQ = 20.0f;
     private Random rng;
 
     private float normal(float mean, float variance) {
