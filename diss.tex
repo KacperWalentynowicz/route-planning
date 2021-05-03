@@ -529,7 +529,7 @@ The simulator provides an evaluation environment for the algorithms to run on. I
 The algorithms are expressed in threaded code\footnote{not to be confused with multithreading} - they consist almost exclusively of calls to subroutines provided. Each core has access to its own local memory. One assumption taken is that local memories are insufficient to hold the entire graphs, but the graphs fit the total memory of the cores (rather than streamed through some external storage). Therefore, the cores need to communicate their data to other cores. They can do it through passing messages. Let's now proceed to describing the building blocks of the simulator.
 
 \subsection{Tasks and Phases}
-Since the early days of computing, algorithms are expressed as sequences of phases in which certain tasks are done. In the simulator \texttt{Tasks} are classes for chunks of work to be done. They have a method \texttt{execute()} which allows to specify the operations to be done for the core, as in the example which uses the provided simple matrix multiplication subroutine to multiply two matrices stored in local memory of some core. 
+Since the early days of computing, algorithms are expressed as sequences of phases in which certain tasks are done. In the simulator \texttt{Tasks} are classes for chunks of work to be done. They have a method \texttt{execute()} which allows to specify the operations to be done for the core, as in the example. It uses the provided simple matrix multiplication subroutine to multiply two matrices stored in local memory of some core. 
 
 \begin{lstlisting}[language = Java , frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
 Task multiply_matrices = new Task(myCore) {
@@ -552,18 +552,56 @@ One subtlety arose in the design process. The single-threaded debug mode would d
 \subsection{Scheduler and task runners}
 The important requirement was that the algorithms are described in terms of operations on abstract cores. \texttt{Scheduler} and \texttt{Task runners} are responsible of handling that and running the computation on the physical machine. The \texttt{Task runner} class extends a java Thread and provides an ability to run tasks from a phases. \texttt{Scheduler} spawns these runners and manages them to ensure that the environment does not deadlock. Once all the tasks from a phase are executed, the Scheduler instructs the runners to finish polling new tasks from this phase and switch to the next one instead (or issues the command for runners to terminate).
 
-The asynchronous execution posed some challenges. Runners need to poll new tasks from the phase in a non-blocking way. Initially I just borrowed my own implementation of a queue done in practical 3 of FurtherJava course last year, but ultimately I've changed it to a  \texttt{ConcurrentLinkedQueue} from \texttt{java.util.concurrent} package, as it had the desired behaviour. Once all the running threads receive null tasks in the same phase, the phase is finished.
+The asynchronous execution posed some challenges. Runners need to poll new tasks from the phase in a non-blocking way. Initially I just borrowed my own implementation of a queue done in practical 3 of FurtherJava course last year, but ultimately I've changed it to a  \texttt{ConcurrentLinkedQueue} from \texttt{java.util.concurrent} package, as it had the desired behaviour, too. Once all the running threads receive null tasks in the same phase, the phase is finished.
 
 The operation of scheduler and task runners follows closely the thread pool design pattern. Summing up, the implementation is hidden in \texttt{simulator/internal}; the programmer just needs to specify an appropriate number of threads. For my machine the optimal number is $8$, but better computers may benefit from using more threads. 
 
 \subsection{Cores and processor architectures}
-Arbitrarily powerful entities. Every operation is executed by some core.
+In the simulator, cores are the entities performing the computations and communicating with each other. Depending on the system, the processing elements may be extremely simple, capable of only doing basic bit manipulations, or as powerful as a modern computer. My design principle was not to constrain the programming of algorithms too much. Talking in terms of Flynn's taxonomy\cite{Flynn}, I was aiming to support the MIMD design: each processing element operates asynchronously and independently of others, though might communicate with others via a network of interconnections. 
 
-\subsection{Trackers and Estimators}
-Track operations and calculate metrics. Easy changes - just supply a different Estimator class if you want different penalties (addressing requirements... again!).
+\begin{figure}
+  \caption{MIMD design. The diagram's source is Dr Modi's book \textit{Parallel algorithms and matrix computation} \cite{modibook}. I would like to thank the author for granting me permission to use it.}
+  \includegraphics[scale=0.3]{modi-MIMD.png}
+\end{figure}
+
+Tweaking this to support somewhat simpler SIMD architectures would be easy: one could specify tasks so that each core does the same simple operation. 
+
+\begin{figure}[h]
+  \caption{SIMD design. The diagram's source is Dr Modi's book \textit{Parallel algorithms and matrix computation} \cite{modibook}. I would like to thank the author for granting me permission to use it.}
+  \includegraphics[scale=0.3]{modi-SIMD.png}
+\end{figure}
+
+In both designs a master core may appear, though in SIMD ones it is essential. It is useful especially for doing initialization and termination work, as well as some bookkeeping. In my implementation \texttt{MasterCore} class simply extends the \texttt{Core} class and doesn't have any special functions.
+
+\begin{lstlisting}[caption = {MasterCore.java}, language = Java , frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+package simulator.utils;
+public class MasterCore extends Core {
+    public MasterCore(EvaluationEnvironment env, int coreID) {
+        super(env, coreID);
+    }
+}
+\end{lstlisting}
+
+The \texttt{Core} class provides primitives mentioned in the requirements analysis with a few additional ones: operations for primitives, naive multiplication of matrices, as well as sending as receiving messages from other cores. I have also added utilities for data structures residing in local memory of the cores: arrays and heaps. Each operation is tracked and measured by the evaluation environment. I have decided not to reinvent the wheel and the data structures subclass standard Java classes (which guarantees no bugs in their behaviour), adding only a simple call to the simulator's tracking class\footnote{More about tracking and costs of operations in the section about Estimators}. This way I have achieved the goal of simplicity: the programmer can write nearly the same code as they would normally write in Java. The only exception is that operations done by cores need to be wrapped in the \texttt{execute()} method of class \texttt{Task}.
+
+\texttt{Processor architecture} class provides methods to specify the network of interconnections between the cores. This is important as far as communication is concerned, as processing elements communicate along these connections. To reflect that indirect message-passing might take place as well, the distance between the cores is assumed to be the length of the shortest path in the graph of interconnections, although a message following a non-direct path of course needs more time than using a direct connection.
+
+\subsection{Message passing}
+The cores have methods to send and receive messages. The behaviour of these is implemented in the \texttt{CommunicationHandler} and \texttt{SingleConnectionHandler} classes. The former manages all possible connections, and \texttt{ConcurrentHashMap} to guarantee thread-safety and efficiency. The latter uses a \texttt{ConcurrentLinkedQueue} and implements a simple producer-consumer relationship. It assumes that messages sent between the same pair (source, destination) are delivered in order. The \texttt{Message} itself can be arbitrary - it contains a list of objects. Receiving a message is a blocking operation, though trying to receive a message sent by another node in the same phase is an error in the algorithm violating the assumptions.
+
+Certain algorithms may benefit from some sort of hardware broadcast. This can be achieved with core's \texttt{setParallelMode()} method, which makes the Estimator adjust the operation costs. 
+
+\subsection{Tracking operations and their costs}
+During the execution, we measure how much time has elapsed on each of the cores since the start. This is not the wall clock from the execution on the physical machine; it increases asynchronously throughout the simulation according to the operations the workers perform.
+
+As a rule of thumb, whenever some operation is done by one of the cores, it is being tracked by an object of class \texttt{Tracker}, which takes appropriate action. There are two cases in which synchronizing the times may be needed: upon receiving a message and upon ending a Phase. Receiving a message send at time $t_0$ whose journey time was $t_1$ is not possible before the time $t_0+t_1$. Ending a Phase may serve as a thread barrier - the time on each core is set to the maximal among all cores. As chaotic relaxation algorithms benefit from relaxing this constraint, the synchronization after a phase is optional.
+
+Various costs associated with operations are estimated by an object of the \texttt{Estimator} class. In the default implementation memory access \& ALU operation latency, message processing and propagation delays, and data structure operation costs need to be estimated. The last one of these decreases the granularity and is probably the most unsatisfactory assumption which I had made. On the other hand, removing it would require implementing the data structures with the primitives provided rather than simply subclassing Java implementations... I still have mixed feelings about this decision - after all the implementations and their efficiencies may differ too; it's easier to change the estimation to a better one than need to reimplement the data structures.
+
+The default estimations are discussed in the \textit{Evaluation} chapter, as they belong there more naturally. The goal of my implementation was to provide ways of measuring different circumstances easily, and this has been achieved.
 
 \subsection{Evaluation environment}
-Describes the class env, and how the components interact with each other as a system
+The \texttt{Evaluation environment} class wraps everything up and helps the building blocks communicate by providing getters and setters. Many of them are hidden from the outside world. In fact, to have a working evaluation environment, one only needs to specify three things: number of threads of the physical machine to run the computation, the processor architecture and the estimator (or choose the default implementations).
 
 
 \section{Parallel matrix multiplication}
