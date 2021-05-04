@@ -16,21 +16,12 @@ public class DijkstraNoSpeedupSingleThreadedTests {
     private final float EPS = 0.001f;
     @BeforeEach
     public void setUp() {
-        // DO NOT CHANGE SETUP ORDER
-
-        this.env = new EvaluationEnvironment(1);
+        this.env = new EvaluationEnvironment();
 
         this.estimator = new Estimator(env);
-        env.attachEstimator(estimator);
+        this.proc = new Lattice(env, 4, "Dijkstra");
 
-        this.tracker = new Tracker(env);
-        env.attachTracker(tracker);
-
-        this.proc = new Lattice(env, 1, "Dijkstra");
-        env.attachProc(proc);
-
-        // This IS important, and needs to be done as the last operation in setup
-        tracker.reset(0.0f);
+        this.env.init(this.proc, this.estimator, 1);
     }
 
     @AfterEach

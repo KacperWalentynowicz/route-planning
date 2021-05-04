@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class EvaluationEnvironment {
     private ProcessorArchitecture proc;
-    private final Scheduler scheduler;
+    private Scheduler scheduler;
     private CommunicationHandler comm;
     private ConcurrentMap <Core, Boolean> parallelModes;
     private Estimator estimator;
@@ -22,21 +22,19 @@ public class EvaluationEnvironment {
         scheduler.finishRunners();
     }
 
-    public EvaluationEnvironment(ProcessorArchitecture proc, Estimator estimator,int N_THREADS) {
-        this.proc = proc;
-        this.estimator = estimator;
-        scheduler = new Scheduler(N_THREADS);
-        comm = new CommunicationHandler(proc);
-        parallelModes = new ConcurrentHashMap<>();
-
-        this.tracker = new Tracker(this);
-        this.tracker.reset(0.0f);
+    public EvaluationEnvironment() {
 
     }
 
-    public EvaluationEnvironment(int N_THREADS) {
+    public void init(ProcessorArchitecture proc, Estimator estimator, int N_THREADS) {
         scheduler = new Scheduler(N_THREADS);
         parallelModes = new ConcurrentHashMap<>();
+        this.proc = proc;
+        this.estimator = estimator;
+        comm = new CommunicationHandler(proc);
+
+        this.tracker = new Tracker(this);
+        this.tracker.reset(0.0f);
     }
 
     public void attachProc(ProcessorArchitecture proc) {

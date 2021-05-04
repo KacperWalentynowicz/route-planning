@@ -4,6 +4,7 @@ import algorithms.SSSP.Dijkstra.*;
 import algorithms.SSSP.SPFA.*;
 import algorithms.SSSP.SSAlgorithm;
 import javafx.util.Pair;
+import org.junit.jupiter.api.Disabled;
 import simulator.utils.*;
 import graphs.*;
 
@@ -19,30 +20,18 @@ public class Evaluation {
     private final float EPS = 0.001f;
 
     public void setUp(String method) {
-        // DO NOT CHANGE SETUP ORDER
-
-        this.env = new EvaluationEnvironment(8);
+        this.env = new EvaluationEnvironment();
 
         this.estimator = new Estimator(env);
-        env.attachEstimator(estimator);
-
-        this.tracker = new Tracker(env);
-        env.attachTracker(tracker);
-
         this.proc = new Lattice(env, 4, method);
-        env.attachProc(proc);
 
-        // This IS important, and needs to be done as the last operation in setup
-        tracker.reset(0.0f);
+        this.env.init(this.proc, this.estimator, 8);
     }
 
     @AfterEach
     public void tearDown() {
     }
 
-    private void evalDijkstra() {
-
-    }
 
     @Test
     public void prepareEvaluation() {

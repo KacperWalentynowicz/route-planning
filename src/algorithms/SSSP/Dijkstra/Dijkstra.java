@@ -174,8 +174,8 @@ public class Dijkstra extends SSPolicy {
             env.runPhase(phase);
 
 
-            // REMAINING: EACH PROCESSING ELEMENT TAKES ITS UPDATES AND CONSIDERS CHANGES
-            Phase updates = new Phase("Retrieve local state", iter);
+            // Each core retrieves requests made for it and updates the local state
+            Phase updates = new Phase("Update local state", iter);
             for (int i=0; i<proc.N_CORES; ++i) {
                 DijkstraCore myCore = (DijkstraCore) proc.getCore(i);
                 Task update_core = new Task(myCore) {
@@ -196,7 +196,6 @@ public class Dijkstra extends SSPolicy {
                 };
                 updates.addTask(update_core);
             }
-
             env.runPhase(updates);
 
         }
