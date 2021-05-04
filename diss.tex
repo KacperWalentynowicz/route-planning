@@ -36,7 +36,7 @@
 tabsize = 4, %% Sets tab space width.
 showstringspaces = false, %% Prevents space marking in strings, string is defined as the text that is generally printed directly to the console.
 numbers = left, %% Displays line numbers on the left.
-commentstyle = \color{green}, %% Sets comment color.
+commentstyle = \color{red}, %% Sets comment color.
 keywordstyle = \color{blue}, %% Sets  keyword color.
 stringstyle = \color{red}, %% Sets  string color.
 rulecolor = \color{black}, %% Sets frame color to avoid being affected by text color.
@@ -601,38 +601,230 @@ Various costs associated with operations are estimated by an object of the \text
 The default estimations are discussed in the \textit{Evaluation} chapter, as they belong there more naturally. The goal of my implementation was to provide ways of measuring different circumstances easily, and this has been achieved.
 
 \subsection{Evaluation environment}
-The \texttt{Evaluation environment} class wraps everything up and helps the building blocks communicate by providing getters and setters. Many of them are hidden from the outside world. In fact, to have a working evaluation environment, one only needs to specify three things: number of threads of the physical machine to run the computation, the processor architecture and the estimator (or choose the default implementations).
+\texttt{Evaluation environment} class wraps everything up and helps the building blocks communicate by providing getters and setters. Many of them are hidden from the outside world. In fact, to have a working evaluation environment, one only needs to specify three things: number of threads of the physical machine to run the computation, the processor architecture and the estimator (or choose the default implementations). The code snippet from one of the test classes shows how to initialize an evaluation environment. 
 
+\begin{lstlisting}[caption = {Setting up an evaluation environment}, language = Java , frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+public void setUp(String method) {
+        this.env = new EvaluationEnvironment();
+
+        this.estimator = new Estimator(env); // a default estimator
+        this.proc = new Lattice(env, 4, method); //processing architecure introduced in the next section
+
+        this.env.init(this.proc, this.estimator, 8); //running on 8 threads
+    }
+
+\end{lstlisting}
+
+Running a phase of the algorithm is even simpler: \texttt{env.runPhase()}. Collection of the results between the execution of phases (or at the end) can be done by accessing the tracker. By default, the interface for shortest path algorithms returns an instance of \texttt{Metrics} class which contains the evaluation results: estimates of time to finish the execution and how much work was performed in total. It is easy to extend this beyond the goals of my project: for other algorithms or if more granularity is required. 
 
 \section{Parallel matrix multiplication}
-I'm thinking whether moving challenges to this section here would make more sense... 
-how I addressed the challenges to implement parallel matrix multiplication
+Section 2.3.1 has been concluded with the remark that it is sufficient to implement an efficient parallel matrix multiplication algorithm which works for square matrices. In this section I am describing the details of this procedure.
 
-$\begin{bmatrix}
-A_{00} \boxtimes B_{00} & A_{01} \boxtimes B_{11} & A_{02} \boxtimes B_{22} \\
-A_{11} \boxtimes B_{10} & A_{12} \boxtimes B_{21} & A_{10} \boxtimes B_{02} \\
-A_{22} \boxtimes B_{20} & A_{20} \boxtimes B_{01} & A_{21} \boxtimes B_{12} \\
-\end{bmatrix}$
+Our goal is to multiply two square matrices $A$ and $B$, each containing $n^2$ elements. Consistently with usual notations, their product $C=A\cdot B$ satisfies $C_{ij} = \sum_{k=0}^{n-1} A_{ik}\cdot B_{kj}$. 
 
-$\begin{bmatrix}
-A_{01} \boxtimes B_{10} & A_{02} \boxtimes B_{21} & A_{00} \boxtimes B_{02} \\
-A_{12} \boxtimes B_{20} & A_{10} \boxtimes B_{01} & A_{11} \boxtimes B_{12} \\
-A_{20} \boxtimes B_{00} & A_{21} \boxtimes B_{11} & A_{22} \boxtimes B_{22} \\
-\end{bmatrix}$
+Let's initially consider the simplified scenario in which we have exactly $n^2$ processing elements available. An ideal network for processing the matrices would be a two-dimensional mesh of these $n^2$ processing elements arranged in a grid, with vertical and horizontal interconnections. In the literature we can find it under different names: lattice, $2D$-torus or grid interconnect. 
 
-$\begin{bmatrix}
-A_{02} \boxtimes B_{20} & A_{00} \boxtimes B_{01} & A_{01} \boxtimes B_{12} \\
-A_{10} \boxtimes B_{00} & A_{11} \boxtimes B_{11} & A_{12} \boxtimes B_{22} \\
-A_{21} \boxtimes B_{10} & A_{22} \boxtimes B_{21} & A_{20} \boxtimes B_{02} \\
-\end{bmatrix}$
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.3]{thorus.png}
+\caption{Torus interconnection of $9$ processing elements}
+\end{figure}
+
+Toroidal interconnections have been of interest for years. They are a natural choice for many matrix-processing algorithms, have low latency and energy consumption. Their disadvantages include difficult wiring of wrap-around connections and costly communication between distant pairs of processing elements. Cannon's algorithm\cite{cannon} for multiplying matrices with processing elements (PEs) works out nicely.
+
+The goal is to have the processing element $P_{ij}$ compute $C_{ij}=\sum_{k=0}^{n-1} A_{ik}\cdot B_{kj}$. It would be to unreasonable to assume that the processing elements have efficient random access to the matrices. Instead, we need to cleverly move the data around.
+
+The calculation will be done in $n$ steps. In each of the steps, $PE_{ij}$ will be adding $A_{ik}\cdot B_{kj}$ for some $k$. Crucially, the order of additions for different PEs will not be the same. The key is to use diagonals and permute them appropriately. A good diagram is worth a thousand words of explanation. 
+
+\begin{equation}
+\begin{bmatrix}
+0 & 1 & 2 \\
+1 & 2 & 0\\
+2 & 0 & 1 
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+1 & 2 & 0 \\
+2 & 0 & 1\\
+0 & 1 & 2
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+2 & 0 & 1 \\
+0 & 1 & 2 \\
+1 & 2 & 0
+\end{bmatrix}
+\end{equation}
+It is easy to see that $P_{ij}$ starts by doing the addition for $k=(i+j)$ mod $n$, and between the steps the value increases by one (modulo $n$). The movement described above corresponds to this computation: 
+\begin{equation}
+\resizebox{0.9\hsize}{!}{$
+\begin{bmatrix}
+A_{00} \cdot B_{00} & A_{01} \cdot B_{11} & A_{02} \cdot B_{22} \\
+A_{11} \cdot B_{10} & A_{12} \cdot B_{21} & A_{10} \cdot B_{02} \\
+A_{22} \cdot B_{20} & A_{20} \cdot B_{01} & A_{21} \cdot B_{12} 
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+A_{01} \cdot B_{10} & A_{02} \cdot B_{21} & A_{00} \cdot B_{02} \\
+A_{12} \cdot B_{20} & A_{10} \cdot B_{01} & A_{11} \cdot B_{12} \\
+A_{20} \cdot B_{00} & A_{21} \cdot B_{11} & A_{22} \cdot B_{22} 
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+A_{02} \cdot B_{20} & A_{00} \cdot B_{01} & A_{01} \cdot B_{12} \\
+A_{10} \cdot B_{00} & A_{11} \cdot B_{11} & A_{12} \cdot B_{22} \\
+A_{21} \cdot B_{10} & A_{22} \cdot B_{21} & A_{20} \cdot B_{02} 
+\end{bmatrix}
+$}
+\end{equation}
+
+The movement of data is remarkably simple: between the iterations elements of matrix $A$ move (cyclically) to the left, and the elements of matrix $B$ move upwards. We're ready to present the pseudocode of matrix multiplication algorithm.
+
+
+\begin{algorithm}
+\caption{Parallel Matrix Multiplication}\label{matmulparallel}
+\begin{algorithmic}[1]
+\Procedure{CannonMatMul(A, B, n)}{}
+\For{\textbf{each} processing element $P_{ij}$ \textbf{concurrently}}
+\State $k \gets (i+j)$ mod $n$
+\State $tempA_{ij} \gets A_{ik}$
+\State $tempB_{ij} \gets B_{kj}$
+\State $C_{ij} \gets tempA_{ij} \cdot tempB_{ij}$
+\For{$step \gets 1$ to $n-1$}
+\State send $tempA_{ij}$ to the left neighbour
+\State send $tempB_{ij}$ to the up neighbour
+\State \Comment{Reminder: send and receive should not be in the same phase!}
+\State $tempA_{ij} \gets$ item from the right neighbour
+\State $tempB_{ij} \gets$ item from the down neighbour
+\State $C_{ij} \gets C_{ij} + tempA_{ij} \cdot tempB_{ij}$
+\EndFor
+\EndFor
+\State \textbf{return} \Comment{$C_{ij}$ is now the desired result}
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+It turns out that if sizes of matrices ($n^2$) are larger than the number of processing elements available (let's call it $p^2$), the same idea still works. It is enough to slice the matrices into $p^2$ submatrices of size approximately $(\frac{n}{p})^2$, and we're done! To deal with edge cases nicely, I have enlarged matrices $A$ and $B$ with $\infty$ values so that $n$ is divisible by $p$.
+
+The pseudocode translates directly to the implementation running on the Evaluation Environment. It is implemented in \texttt{CannonMatMul.java}. The algorithm is simple to implement and efficient in terms of moving data around. Its greatest disadvantage is reliance on the grid of processing elements being available - otherwise the movement of data may become quite inefficient.
 
 \section{Parallel Dijkstra's algorithm}
-there are many many challenges here, how can we implement this efficiently
+This section extends the discussion in section 2.3.2 and is concerned with the implementation details of the described ideas. 
+
+Let's recall the pseudocode of SimpleParallelDijkstra.
+
+\begin{algorithm}
+\caption{Simple Parallel Dijkstra}\label{pdijkstraagain}
+\begin{algorithmic}[1]
+\Procedure{SimpleParallelDijkstra(G, source)}{}
+\For{$node \gets 1$ to $N$}
+    \State $dist[node] \gets \infty$
+\EndFor
+\State $dist[source] \gets 0$
+\State $assign\_nodes\_to\_workers()$
+\State $Q \gets G.nodes()$
+    \While{\textbf{not} Q.empty()}
+        \For{\textbf{each} core $c$ \textbf{concurrently}}
+        \State $u_c \gets$ node in $Q$ such that $assigned(u_c) = c$ with minimal $dist[]$
+        \EndFor
+        \State $u \gets u_c$ with minimal $dist[]$
+        \State $Q \gets Q \setminus \{u\}$
+        \For{\textbf{each} edge ($u$, $v$, $w$)}
+        \If{$dist[v] > dist[u] + w$}
+            \State $dist[v] \gets dist[u] + w$
+            \State $communicate\_change(assigned(v), v, dist[u] + w)$
+        \EndIf
+      \EndFor
+    \EndWhile
+\State \textbf{return} $dist$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+In line $5$ there is a mysterious function \textit{assign\_nodes\_to\_workers()}. The authors of \textit{A parallelization of Dijkstra's shortest path algorithm} \cite{dijkstra} suggest a random initialization in order to prove that theoretical bounds occur with high probability. I have initially followed their description, but later decided to examine an improvement which aims to optimize the communication costs. Since it's an improvement to both Dijkstra's and SPFA algorithms, the description follows in section 3.7. For now, a mapping of nodes to workers is chosen uniformly at random for each node. The graph is then partitioned according to this mapping in a node-centric way: each worker knows about the subgraph induced by its nodes.
+
+Instead of a maintaining a global priority queue, it is better that each of the workers maintains its own, local priority queue which is going to hold nodes assigned to it sorted by the current distance. This liquidates the need for implementing parallel data structures. Additionally, another priority queue is kept at each node to calculate minimum of the expression $dist[u] + OUT(u)$, where $OUT(u)$ was the minimal weight of an edge going out of $u$. 
+
+The main while loop of the parallel Dijkstra's algorithm works in four phases:
+
+\begin{enumerate}
+    \item The cores communicate to find the threshold $L = min{dist[u] + OUT(u)}$ among all nodes which are still in the queues. If a core has no nodes in their queue, it can terminate.
+    \item Each core removes all the nodes from its queues with the current distance not exceeding $L$. For each of the removed nodes, the final distance is now calculated.
+    \item For each node $u$ of the removed nodes, all edges ($u, v, w$) should be considered for relaxation. It guarantees that $dist[v]$ is at most $dist[u] + w$, which happens if $u$ was the direct predecessor of $w$. This forms a collection of requests of the form ($v, dist[u]+w$) which signal a possible lower bound on the distance. The request ($v$, $d$) is then sent to the core \textit{assigned(v)} in a batch.
+    \item Each core receives the batch of possible updates and processes them similarly to the traditional sequential algorithm: updates the distances and triggers decreaseKey() on the relevant nodes.
+\end{enumerate}
+
+The algorithm finishes once all the cores have terminated. Each core has computed shortest distances for the nodes assigned to it. The algorithm, unlike matrix multiplication, does not use any special assumptions about the interconnections between processing elements. However, using special properties of the available network may bring additional benefits.
 
 \section{Parallel SPFA implementation}
-what is done and why it is done like that
+This section is very similar to the previous section, as SPFA and Dijkstra's algorithm have a lot in common. Let's recall the proposed pseudocode of a parallel SPFA.
 
-\section{Code testing strategy}
+\begin{algorithm}
+\caption{Parallel SPFA}\label{pspfa2}
+\begin{algorithmic}[1]
+\Procedure{Parallel SPFA(G, source)}{}
+\For{$node \gets 1$ to $N$}
+    \State $dist[node] \gets \infty$
+\EndFor
+\State $dist[source] \gets 0$
+\State $assign\_nodes\_to\_workers()$
+\State $Q \gets \{source\}$ \Comment{Q is a normal queue without priorities}
+    \While{\textbf{not} Q.empty()}
+        \For{\textbf{each} core $c$ \textbf{concurrently}}
+        \State $u_c \gets Q.pop\_front()$
+        \For{\textbf{each} edge ($u_c$, $v$, $w$)}
+        \If{$dist[v] > dist[u_c] + w$}
+            \State $dist[v] \gets dist[u_c] + w$
+            \If{$v$ is not in $Q$}
+                \State $Q.push(v)$
+                \EndIf
+        \EndIf
+        \EndFor
+      \EndFor
+    \EndWhile
+\State \textbf{return} $dist$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+Similarly as before, the function in line $5$ in the initialization phase partitions the graph $G$ randomly. $Q$ is no longer a priority queue, just a typical FIFO one. It was tempting to implement the algorithm directly without too many modifications - just make sure that $Q$ and the arrays are safe to be accessed in parallel by multiple workers. This could create contention around the ends of the queue, as many workers would be trying to poll or add nodes at the same time. Although there are standard implementations of work stealing which use a mix of FIFO and LIFO queues implemented as far as possible with lock-free, atomic primitives, the more promising design seems to be the one in which each processing element operates on their own queue. Additionally, this way renders the  request-generation system from Dijkstra's parallelization usable here, too. 
+
+There is at least one more benefit, but this one is a bit more subtle. Checking if $v$ is in $Q$ (line $13$) can be done with a simple boolean array. If this array is global, the effect of operation updating distance in line $12$ must be visible to all other cores quickly. If this wasn't the case, we would allow a tricky concurrency bug to occur. Let's assume that work of cores $C_1$ and $C_2$ happens in this unlucky order:
+
+\begin{enumerate}
+    \item $C_2$ is in the process of relaxing from node $v$ and gets $dist[v]$.
+    \item $C_1$ is in the process of relaxing from node $u$ and sets $dist[v]$ to a new, smaller value.
+    \item $C_1$ checks that $v$ is in the queue, so doesn't add it once again.
+    \item $C_2$ removes $v$ from the queue and proceeds to relax some other node $z$ with $dist[v] + length(v, z)$.
+\end{enumerate}
+After the fourth step is executed, vertex $v$ may never be put in the queue again. Although its distance is calculated correctly, it may not be calculated correctly for node $z$ if the shortest path to $z$ went through $v$.
+
+If the queues and arrays are local to cores this problem disappears, as there is only one core capable of manipulating data about node $v$. This design looks superior to the other one, as not imposing sequential consistency rules may be crucial for performance of this chaotic relaxation algorithm. The cores can just operate asynchronously until they have no more changes to process.
+
+To conclude this section, I am presenting a code snippet from \texttt{SPFA.java} demonstrating the implementation.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% TODO : Add the snippet %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Optimizing communication costs for SPFA and Dijkstra}
+Although choosing the mapping of nodes to processing elements in the function \textit{assign\_nodes\_to\_workers()} randomly is satisfactory, we could try to improve beyond random. If we assign entirely at random, then the processing elements need to send the messages all around the network of interconnections. It would be better if most of the graph's edges connected nodes assigned to the same processing element, or at least to a neighboring one.
+
+In this section I am describing the optimization for lattice interconnections. It is not obvious that this is going to improve anything - although communication cost may decrease, utilization of processing elements may decrease, too. This is because many workers may be idling as their chunk hasn't started yet or has already finished. 
+
+Real-world road networks downloaded with OSMnx have GPS coordinates associated with them. I have written a short script in \texttt{graphs/graph\_download.ipynb} to add those to the graph format. Using these coordinates, a simple partitioning is performed. Assuming there are $p^2$ processing elements, $p-1$ vertical and $p-1$ horizontal lines are added independently. Along each dimension, after roughly $\frac{n}{p}$ vertices a new line is added, as in the diagram below. Each of the $p^2$ formed regions contains nodes mapped to some processing element.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.15]{mapping.png}
+\caption{Nodes of a graph mapped to $9$ workers}
+\end{figure}
+
+The usefulness of this modification is measured in the \textit{Evaluation} chapter.
+
+\section{Testing the code}
+I am falling asleep in front of the computer after 10 hours of writing and sleeping for 3 hours... will finish this tomorrow
+
 What I am doing to ensure that my algorithms are correct: cross-validation against each other and against networkx libraries
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
