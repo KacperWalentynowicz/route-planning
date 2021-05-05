@@ -61,7 +61,7 @@ numberstyle = \tiny,
 \vspace*{60mm}
 \begin{center}
 \Huge
-\textbf{I seriously need to figure out a GOOD title} \\[5mm]
+\textbf{Parallel route-finding algorithms for road networks} \\[5mm]
 Computer Science Tripos -- Part II \\[5mm]
 Trinity College \\[5mm]
 \today  % today's date
@@ -107,8 +107,7 @@ None.
 \newpage
 \section*{Declaration}
 
-I, Kacper Walentynowicz of Trinity College, being a candidate for Part II of the Computer Science Tripos, hereby declare that this dissertation and the work described in it are my own work, unaided except as may be specified below, and that the dissertation does not contain material that has already been used to any substantial
-extent for a comparable purpose. I am content for my dissertation to be made available to the students and staff of the University.
+I, Kacper Walentynowicz of Trinity College, being a candidate for Part II of the Computer Science Tripos, hereby declare that this dissertation and the work described in it are my own work, unaided except as may be specified below, and that the dissertation does not contain material that has already been used to any substantial extent for a comparable purpose. I am content for my dissertation to be made available to the students and staff of the University.
 
 \bigskip
 \leftline{Signed}
@@ -200,7 +199,7 @@ The tool needed the following features:
     \item Provide functionalities for cores - entities which are going to perform work of our algorithms. These include basic primitives such as ALU\footnote{Arithmetic Logic Unit} operations, accessing local DRAM of the cores, as well as simple data structures for those: local arrays, queues, and sets. 
     \item Provide means of communicating for the cores - either by passing messages (broadcast or core-core), or accessing shared data structures in memory.
     \item Allow specifying the topology of interconnections to reflect that in real-world machines there is limited number of direct connection between workers.
-    \item All of the operations should be implicitly tracked by the evaluation environment. The programmer should also be able to specify what the costs of various operations in the system are \footnote{they are independent of the algorithm used for computation}, in order to test the algorithms in different circumstances.
+    \item All of the operations should be implicitly tracked by the evaluation environment. The programmer should also be able to specify what the costs of various operations in the system are\footnote{they are independent of the algorithm used for computation}, in order to test the algorithms in different circumstances.
     \item Running the simulations using multiple threads of a physical machine (my laptop with an $8$-core processor), so that the computations do not run unreasonably long.
     \item Allowing to run the simulations in single-threaded debug mode. There are lots of surprising concurrency bugs which can arise from incorrect implementations and are not easy to find. Therefore, a debug mode which allows deterministic execution could prove very useful.
 \end{enumerate}
@@ -249,7 +248,7 @@ One can notice that the innermost loop resembles matrix multiplications with an 
 \Procedure{MatMul(G)}{}
 \State $\textit{dist} \gets G.adj\_matrix()$
     \For{$step \gets 1$ to $log(N)$}
-        \State $dist \gets multiply\_matrix\_by\_itself(dist,(+,min))$
+        \State $dist \gets {\rm multiplying\_matrix\_by\_itself}(dist,(+,min))$
       \EndFor
 \State \textbf{return} $dist$
 \EndProcedure
@@ -331,7 +330,7 @@ Crauser et al. (1998)\cite{dijkstra} prove that this optimization reduces with h
 \subsection{Shortest Path Faster Algorithm}
 Although one can extract a lot of parallelism from such a highly sequential algorithm like Dijkstra's, it may be better to design an algorithm with parallelism in mind. 
 
-Two most limiting factors of Dijkstra's algorithm are: the strong constraint that a vertex may never be relaxed again, and maintaining a priority queue. A relatively unpopular algorithm which originated in the $1950$s\footnote{According to Wikipedia, the exact description (with a name algorithm D) can be found in:  Moore, Edward F. (1959).  ”The shortest path through a maze”.  Proceedings of the International Symposium on the Theory of Switching.  Harvard University Press.  pp.  285–292. I have not managed to find the access to this resource and verify this information myself.} lacks these bottlenecks. A simple version of this algorithm abandons priority in the queue and performs relaxations while there are some possible.
+Two most limiting factors of Dijkstra's algorithm are: the strong constraint that a vertex may never be relaxed again, and maintaining a priority queue. A relatively unpopular algorithm which originated in the $1950$s\footnote{According to Wikipedia, the exact description (with a name algorithm D) can be found in:  Moore, Edward F. (1959).  'The shortest path through a maze'.  Proceedings of the International Symposium on the Theory of Switching.  Harvard University Press.  pp.  285–292. I have not managed to find the access to this resource and verify this information myself.} lacks these bottlenecks. A simple version of this algorithm abandons priority in the queue and performs relaxations while there are some possible.
 
 \begin{algorithm}
 \caption{Chaotic relaxation}\label{chaotic}
@@ -476,11 +475,11 @@ Let's finish the chapter with a demonstration of OSMNX's usefulness. Creating th
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Software Development - practices and tools}
-My project consisted of two parts - developing the simulator to run the algorithms, and coding the actual parallel algorithms in the simulator. I consider my work to have been done in a spiral-like method of software development. Although I had tried to carefully design the simulator by anticipating features needed by the algorithms, there were a couple bits which needed modifications. Additionally, algorithms themselves allowed incremental improvements - initially do a part of code in a suboptimal, but easier way, then fix the shortcomings in the later versions.  
+My project consisted of two parts - developing the simulator to run the algorithms, and coding the actual parallel algorithms in the simulator. I consider my work to have been done in a spiral-like method of software development. Although I had tried to carefully design the simulator by anticipating features needed by the algorithms, there were a couple of bits which needed modifications. Additionally, algorithms themselves allowed incremental improvements - initially do a part of code in a suboptimal, but easier way, then fix the shortcomings in the later versions.  
 
 The natural choice for implementing the project was Java. The language has excellent support for writing concurrent (I have used \textit{java.util.concurrent} extensively throughout the project) and object-oriented programs. It also had the pluses of being taught in Part IA and IB courses, so I didn't need to spend time learning a new language for the project.
 
-But Java also has drawbacks, and I couldn't imagine doing evaluation in Java. The results of running the algorithms were produced in the form of CSV files, so that I could then import them in Python easily. Python was a much better choice for doing data manipulations, comparisons, plotting. I had to use Python anyway if I wanted to make use of the aforementioned OSMnx module (I don't think that its ports to other languages exist). Altogether, I have written the entire project in Java with the exception of two Python scripts: \textit{graph\_download.py} and \textit{evaluation.py}. I have also made heavy use of the JetBrains IDEs (IntelliJ and PyCharm). I especially appreciated their capabilities for automatically resolving dependencies, imports and refactorings with usage search. Obeying builtin linter suggestions made me confident that the code follows good stylistic conventions.
+But Java also has drawbacks, and I couldn't imagine doing evaluation in Java. The results of running the algorithms were produced in the form of CSV files, so that I could then import them in Python easily. Python was a much better choice for doing data manipulations, comparisons and plotting. I had to use Python anyway if I wanted to make use of the aforementioned OSMnx module (I don't think that its ports to other languages exist). Altogether, I have written the entire project in Java with the exception of two Python scripts: \textit{graph\_download.py} and \textit{evaluation.py}. I have also made heavy use of the JetBrains IDEs (IntelliJ and PyCharm). I especially appreciated their capabilities for automatically resolving dependencies, imports and refactorings with usage search. Obeying builtin linter suggestions made me confident that the code follows good stylistic conventions.
 
 Throughout the project I have been meeting regularly with my supervisors. Usually had a meeting once a week with either Dr Modi (Tuesdays), or Dr Greaves (Wednesdays). Additionally, during Michealmas and Lent terms my Directors of Studies held short ($10$ minutes) update meetings, where I would present recent developments in the project. When doing the work itself, I tried to follow the division suggested in my project proposal - biweekly sprints, but a few changes arose. The simulator work took longer than I had anticipated (partially because I made it much more sophisticated than originally planned), but later I caught up as the work on algorithms went faster than anticipated. I have also switched the order of implementing parallel Dijkstra and MatMul algorithms, as the latter seemed less  error-prone.  
 
@@ -526,12 +525,12 @@ Let's start with the figure which gives a directory structure of my project. Cru
 \section{Simulator}
 \subsection{Overview}
 The simulator provides an evaluation environment for the algorithms to run on. In this section I am describing its implementation, as well as the functions it provides for coding algorithms. Looking from a very high-level perspective, a parallel system consists of cores executing various operations provided. Additionally, a master core is introduced which is helpful for doing bookkeeping work.
-The algorithms are expressed in threaded code\footnote{not to be confused with multithreading} - they consist almost exclusively of calls to subroutines provided. Each core has access to its own local memory. One assumption taken is that local memories are insufficient to hold the entire graphs, but the graphs fit the total memory of the cores (rather than streamed through some external storage). Therefore, the cores need to communicate their data to other cores. They can do it through passing messages. Let's now proceed to describing the building blocks of the simulator.
+The algorithms are expressed in threaded code\footnote{not to be confused with multithreading} - they consist almost exclusively of calls to subroutines provided. Each core has access to its own local memory. One assumption taken is that local memories are insufficient to hold the entire graphs, but the graphs fit the total memory of the cores (rather than streamed from some external storage). Therefore, the cores need to communicate their data to other cores. They can do it through passing messages. Let's now proceed to describing the building blocks of the simulator.
 
 \subsection{Tasks and Phases}
 Since the early days of computing, algorithms are expressed as sequences of phases in which certain tasks are done. In the simulator \texttt{Tasks} are classes for chunks of work to be done. They have a method \texttt{execute()} which allows to specify the operations to be done for the core, as in the example. It uses the provided simple matrix multiplication subroutine to multiply two matrices stored in local memory of some core. 
 
-\begin{lstlisting}[language = Java , frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+\begin{lstlisting}[language = Java , frame = trBL ,  , escapeinside={(*@}{@*)}]
 Task multiply_matrices = new Task(myCore) {
     @Override
     public void execute() {
@@ -547,7 +546,7 @@ Every sensible system should provide guarantees when effects of certain operatio
 
 Additionally, there is a functionality for a task to be repeated. This feature is added to support types of algorithms which operate until there are no changes.
 
-One subtlety arose in the design process. The single-threaded debug mode would deadlock if any of the Tasks contained operations was blocking. I have investigated the possibility of using a Java package for coroutines to allow the execution to be suspended and resumed, but decided that adding it would be overly complicated for the needs and sticked to the assumption that Tasks execute non-blocking methods which run to completion (but they may, of course, in parallel with other tasks). In hindsight, this design decision did not turn out constraining.
+One subtlety arose in the design process. The single-threaded debug mode would deadlock if any of the Tasks contained operations that were blocking. I have investigated the possibility of using a Java package for coroutines to allow the execution to be suspended and resumed, but decided that adding it would be overly complicated for the needs and stuck to the assumption that Tasks execute non-blocking methods which run to completion (but they may, of course, in parallel with other tasks). In hindsight, this design decision did not turn out constraining.
 
 \subsection{Scheduler and task runners}
 The important requirement was that the algorithms are described in terms of operations on abstract cores. \texttt{Scheduler} and \texttt{Task runners} are responsible of handling that and running the computation on the physical machine. The \texttt{Task runner} class extends a java Thread and provides an ability to run tasks from a phases. \texttt{Scheduler} spawns these runners and manages them to ensure that the environment does not deadlock. Once all the tasks from a phase are executed, the Scheduler instructs the runners to finish polling new tasks from this phase and switch to the next one instead (or issues the command for runners to terminate).
@@ -573,7 +572,7 @@ Tweaking this to support somewhat simpler SIMD architectures would be easy: one 
 
 In both designs a master core may appear, though in SIMD ones it is essential. It is useful especially for doing initialization and termination work, as well as some bookkeeping. In my implementation \texttt{MasterCore} class simply extends the \texttt{Core} class and doesn't have any special functions.
 
-\begin{lstlisting}[caption = {MasterCore.java}, language = Java , frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+\begin{lstlisting}[caption = {MasterCore.java}, language = Java , frame = trBL ,  , escapeinside={(*@}{@*)}]
 package simulator.utils;
 public class MasterCore extends Core {
     public MasterCore(EvaluationEnvironment env, int coreID) {
@@ -603,7 +602,7 @@ The default estimations are discussed in the \textit{Evaluation} chapter, as the
 \subsection{Evaluation environment}
 \texttt{Evaluation environment} class wraps everything up and helps the building blocks communicate by providing getters and setters. Many of them are hidden from the outside world. In fact, to have a working evaluation environment, one only needs to specify three things: number of threads of the physical machine to run the computation, the processor architecture and the estimator (or choose the default implementations). The code snippet from one of the test classes shows how to initialize an evaluation environment. 
 
-\begin{lstlisting}[caption = {Setting up an evaluation environment}, language = Java , frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+\begin{lstlisting}[caption = {Setting up an evaluation environment}, language = Java , frame = trBL ,  , escapeinside={(*@}{@*)}]
 public void setUp(String method) {
         this.env = new EvaluationEnvironment();
 
@@ -632,7 +631,7 @@ Let's initially consider the simplified scenario in which we have exactly $n^2$ 
 
 Toroidal interconnections have been of interest for years. They are a natural choice for many matrix-processing algorithms, have low latency and energy consumption. Their disadvantages include difficult wiring of wrap-around connections and costly communication between distant pairs of processing elements. Cannon's algorithm\cite{cannon} for multiplying matrices with processing elements (PEs) works out nicely.
 
-The goal is to have the processing element $P_{ij}$ compute $C_{ij}=\sum_{k=0}^{n-1} A_{ik}\cdot B_{kj}$. It would be to unreasonable to assume that the processing elements have efficient random access to the matrices. Instead, we need to cleverly move the data around.
+The goal is to have the processing element $P_{ij}$ compute $C_{ij}=\sum_{k=0}^{n-1} A_{ik}\cdot B_{kj}$. It would be to unreasonable to assume that the processing elements have efficient random access to the entire matrices. Instead, we need to cleverly move the data around.
 
 The calculation will be done in $n$ steps. In each of the steps, $PE_{ij}$ will be adding $A_{ik}\cdot B_{kj}$ for some $k$. Crucially, the order of additions for different PEs will not be the same. The key is to use diagonals and permute them appropriately. A good diagram is worth a thousand words of explanation. 
 
@@ -817,16 +816,57 @@ Real-world road networks downloaded with OSMnx have GPS coordinates associated w
 \begin{figure}[ht]
 \centering
 \includegraphics[scale=0.15]{mapping.png}
-\caption{Nodes of a graph mapped to $9$ workers}
+\caption{A graph mapped to $9$ workers}
 \end{figure}
 
-The usefulness of this modification is measured in the \textit{Evaluation} chapter.
+Usefulness of this modification is measured in the \textit{Evaluation} chapter.
 
 \section{Testing the code}
-I am falling asleep in front of the computer after 10 hours of writing and sleeping for 3 hours... will finish this tomorrow
+Parallel programs can be difficult to debug, as they can manifest subtle bugs in bizarre ways. In this section I am addressing the difficulties of testing the code for correctness. Performance evaluation follows in the next chapter.
 
-What I am doing to ensure that my algorithms are correct: cross-validation against each other and against networkx libraries
+Throughout the project I have been using test-driven development for testing the algorithms. I have prepared the graphs for test runs early on. Each of the algorithms was be tested on six small road networks of New York city center. The smallest one had just $3$ nodes and $2$ edges and was useful for verifications on paper - if the issue was major\footnote{Example bug: forgetting to collect the results from processing elements}, it would appear on a testcase easy to follow by hand. The largest of the graphs had $27$ nodes and $64$ edges.
 
+Each of the algorithms was asked to calculate all pairs of shortest paths for these graphs and verified against the model answer. This model answer was computed with networkX's \texttt{shortest\_path\_length()} function. To account for floating-point errors, results $a$ and $b$ were considered to be equal if $abs(a-b) < \epsilon$. The value of $\epsilon$ was chosen to be $10^{-3}$.
+
+Each test was run on the evaluation environment in a single-threaded and multi-threaded mode. If the two results differed, it was a sign of a concurrency bug. If even the deterministic single-threaded mode failed, the debugging task was much simpler, as the issue was reproducible. I could then easily detect the place where the mistake happened and fix it.
+
+Altogether, this test set achieved $99\%$ coverage of lines for the algorithms package\footnote{calculated with the run-with-coverage feature of IntelliJ IDEA}, and $100\%$ coverage of classes and methods. The same tests also cover a significant chunk of the simulator modules which achieve over $80\%$ of coverage. This is partially because there are a few simple methods and functionalities which I had implemented, but ended up not being used in the implementation of the algorithms.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% I actually need to implement the thing below!!
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+One more difficult challenge remained. The evaluation environment outputs a number as a measurement, how can we be sure that it is the appropriate one? 
+
+The modular approach taken helped me to verify this. I wrote a very simple program which performed the operations available in an order. If I wanted to verify that operation X was tracked and counted correctly, I could supply an Estimator which assessed the cost of operation X as $1$, and the costs of all the other operations as $0$. The result was then compared with the number of operations X the code performs. Doing such a test for all the simulator's primitives was a sanity check that the measurements provided are legitimate.
+
+The tests, following the Arrange-Act-Assert design pattern, were implemented with the features of JUnit testing library. I have not set up a continuous integration pipeline, as clicking the IntelliJ \texttt{run} button seemed sufficient for the needs of this project.
+
+\begin{lstlisting}[caption = {Example code snippet from DijkstraMultiThreadedTests.java}, language = Java , frame = trBL ,  , escapeinside={(*@}{@*)}]
+@BeforeEach
+public void setUp() {
+    this.env = new EvaluationEnvironment();
+    
+    this.estimator = new Estimator(env);
+    this.proc = new Lattice(env, 4, "Dijkstra");
+    
+    this.env.init(this.proc, this.estimator, 8);
+}
+    
+@Test
+public void testDijkstraSmallTest0() {
+    // Arrange
+    Graph g = new Graph("data/test_0.txt");
+    SSAlgorithm dijkstra = new SSAlgorithm(env, g, new Dijkstra(env));
+
+    // Act
+    Matrix output = dijkstra.getAllPairsShortestPaths(g).getKey();
+    Matrix model_ans = new Matrix("data/test_0_ans.txt");
+
+    // Assert
+    Assertions.assertTrue(output.equalsWithEpsilon(model_ans, EPS));
+}
+
+\end{lstlisting}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Evaluation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
