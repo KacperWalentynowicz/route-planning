@@ -2,13 +2,13 @@ package simulator.utils;
 import java.util.Random;
 
 public class Estimator {
-    private EvaluationEnvironment env;
-    private float ALU = 1.0f;
-    private float PACK = 2.0f;
-    private float UNPACK = 2.0f;
-    private float JOURNEY = 20.0f;
-    private float MEM = 0.5f;
-    private float PQ = 20.0f;
+    protected EvaluationEnvironment env;
+    protected float ALU = 1.0f;
+    protected float PACK = 2.0f;
+    protected float UNPACK = 2.0f;
+    protected float JOURNEY = 20.0f;
+    protected float MEM = 0.5f;
+    protected float PQ = 20.0f;
     private Random rng;
 
     private float normal(float mean, float variance) {

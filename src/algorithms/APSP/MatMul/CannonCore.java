@@ -5,8 +5,8 @@ import simulator.utils.Core;
 import simulator.utils.EvaluationEnvironment;
 
 public class CannonCore extends Core {
-    Integer row;
-    Integer col;
+    public Integer row;
+    public Integer col;
     Matrix a;
     Matrix b;
     Matrix c;
