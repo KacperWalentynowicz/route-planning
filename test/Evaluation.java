@@ -32,7 +32,7 @@ public class Evaluation {
     public void tearDown() {
     }
 
-
+    @Disabled
     @Test
     public void prepareEvaluation() {
         double ms_constant = 1e6;
