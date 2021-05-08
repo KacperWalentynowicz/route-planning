@@ -94,7 +94,7 @@ public class SPFA extends SSPolicy {
         int iter = 0;
         while (activeNodes.countBits() > 0){
             iter += 1;
-            Phase work = new Phase("Work phase", iter);
+            Phase work = new Phase("Work phase", iter, false);
             for (int i=0; i<proc.N_CORES; ++i) {
                 SPFACore myCore = (SPFACore) proc.getCore(i);
                 Task doWork = new Task(myCore) {

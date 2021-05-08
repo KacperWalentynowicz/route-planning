@@ -28,6 +28,7 @@ public class Scheduler {
 
     public void runPhase(Phase p) {
         if (getRunningThreads() != 0) {
+            System.out.println(p);
             throw new IllegalThreadStateException("Trying to subscribe a running thread into a different Phase. Error in the algorithm!");
         }
 
@@ -35,14 +36,15 @@ public class Scheduler {
             runners.get(i).subscribe(p);
         }
 
-        synchronized (threads_running){
+        while (threads_running.get() > 0);
+        /*synchronized (threads_running){
             try {
                 threads_running.wait();
             } catch (InterruptedException e) {
                 // all runners finished work! the Phase is finished! :)
                 return;
             }
-        }
+        }*/
     }
 
     public void startRunners() {

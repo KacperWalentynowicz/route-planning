@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TaskRunner extends Thread {
     private Phase runningPhase; //the phase which TaskRunner is currently running
-    private volatile boolean isRunning;
+    private boolean isRunning;
     private volatile boolean requiredFinish;
     private final AtomicInteger runningThreads;
 
@@ -31,25 +31,23 @@ public class TaskRunner extends Thread {
             throw new IllegalThreadStateException("Trying to subscribe a running thread into a different Phase. Error in the algorithm!");
         }
 
-        runningThreads.getAndIncrement();
-        runningPhase = p;
-        isRunning = true;
+        synchronized (runningThreads) {
+            runningThreads.getAndIncrement();
+            runningPhase = p;
+            this.isRunning = true;
+        }
     }
 
     @Override
     public void run() {
         while (!requiredFinish) {
+            //System.out.println(runningPhase);
             if (!isRunning) continue;
 
             Task t = runningPhase.getTask();
             if (t == null) { //this phase has ended! better wait for another subscription
                 isRunning = false;
-                synchronized (runningThreads) {
-                    runningThreads.getAndDecrement();
-                    if (runningThreads.get() == 0) {
-                        runningThreads.notifyAll();
-                    }
-                }
+                runningThreads.getAndDecrement();
             }
             else {
                 t.execute();

@@ -10,10 +10,21 @@ import static java.lang.Math.max;
 public class Tracker {
     private final EvaluationEnvironment env;
     private ConcurrentMap <Core, Float> timeOnCores;
-
-
+    private float work_done;
+    private double last_sum;
     public Tracker(EvaluationEnvironment env) {
         this.env = env;
+        work_done = 0.0f;
+        last_sum = 0.0f;
+    }
+
+    private float getSum() {
+        float res = 0.0f;
+        if (timeOnCores == null) return res;
+        for (Float f : timeOnCores.values()) {
+            res += f;
+        }
+        return res;
     }
 
     public void reset(float value) {
@@ -24,20 +35,22 @@ public class Tracker {
     }
 
     public void synchronizeAfterPhase() {
+        // after the phase has finished, work performed per core is current_value - old_value
+        // we need to avoid counting wait time into the amount of total work performed
+        work_done += getSum() - last_sum;
         reset((float)getTotalTime().getExecutionTime());
+        last_sum = getSum();
     }
 
     public Metrics getTotalTime() {
         double max_runtime = 0.0;
-        double work_performed = 0.0;
 
         for (Core core : env.getCores()) {
             double tm = this.getTime(core);
             max_runtime = max(max_runtime, tm);
-            work_performed += tm;
         }
 
-        return new Metrics(max_runtime, work_performed);
+        return new Metrics(max_runtime, work_done);
     }
 
     public float getTime(Core core) {

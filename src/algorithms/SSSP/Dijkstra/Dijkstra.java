@@ -25,6 +25,7 @@ public class Dijkstra extends SSPolicy {
         master.setParallelMode(true);
 
         Assignment mapping = new Assignment(g, proc.N_CORES);
+        //Assignment mapping = new Assignment(g.N, proc.N_CORES);
         GlobalArray shortestEdges = new GlobalArray(g.N);
         for (Edge e : g.getEdges()) {
             shortestEdges.minimize(master, e.from, e.len);
@@ -102,7 +103,9 @@ public class Dijkstra extends SSPolicy {
         result.minimize(master, source, 0.0f);
         init(result, g, source);
 
+        int no_phases = 0;
         for (int iter = 1;; ++iter){
+            ++no_phases;
             Phase cores_send_l = new Phase("Cores send L", iter);
             for (int i=0; i<proc.N_CORES; ++i) {
                 DijkstraCore myCore = (DijkstraCore) proc.getCore(i);
@@ -135,6 +138,7 @@ public class Dijkstra extends SSPolicy {
                 L = min(L, recv_value);
             }
 
+            //System.out.println(L);
             if (L == 1e9f) {
                 // we are done! no core has more data to process
                 break;
@@ -147,7 +151,7 @@ public class Dijkstra extends SSPolicy {
 
 
             // nodes receive coordinates values
-            Phase phase = new Phase("Receive L and generate requests", iter);
+            Phase phase = new Phase("Receive L and generate requests", iter, false);
             for (int i=0; i<proc.N_CORES; ++i) {
                 DijkstraCore myCore = (DijkstraCore) proc.getCore(i);
                 Task recv_L_and_work = new Task(myCore) {
@@ -172,10 +176,10 @@ public class Dijkstra extends SSPolicy {
                 phase.addTask(recv_L_and_work);
             }
             env.runPhase(phase);
-
+            //System.out.println(L);
 
             // Each core retrieves requests made for it and updates the local state
-            Phase updates = new Phase("Update local state", iter);
+            Phase updates = new Phase("Update local state", iter, false);
             for (int i=0; i<proc.N_CORES; ++i) {
                 DijkstraCore myCore = (DijkstraCore) proc.getCore(i);
                 Task update_core = new Task(myCore) {
@@ -200,6 +204,8 @@ public class Dijkstra extends SSPolicy {
 
         }
         env.finishEvaluation();
+
+        //System.out.printf("%d %d\n", g.N, no_phases);
         return env.getTracker().getTotalTime();
     }
 }

@@ -1,27 +1,29 @@
 package simulator.utils;
 import java.util.Random;
 
+import static java.lang.Float.max;
+
 public class Estimator {
     protected EvaluationEnvironment env;
-    protected float ALU = 1.0f;
-    protected float PACK = 2.0f;
-    protected float UNPACK = 2.0f;
-    protected float JOURNEY = 20.0f;
     protected float MEM = 0.5f;
-    protected float PQ = 20.0f;
+    protected float ALU = 1;
+    protected float PACK = 3.0f;
+    protected float UNPACK = 3.0f;
+    protected float JOURNEY = 20.0f;
+    protected float PQ = 25.0f;
     private Random rng;
 
-    private float normal(float mean, float variance) {
-        return (float)(mean + rng.nextGaussian()) / variance;
+    private float normal(float mean, float stddev) {
+        return (float)(rng.nextGaussian() * stddev) + mean;
     }
     // this implements speedup from hardware parallelism
     // for example, we issue one SIMD instruction from the MPU
     // we want a broadcast to all N neighbors available,
     // so in this mode cost of each operation is divided by N .
-    private float getParallelSpeedup(Core core) {
+    protected float getParallelSpeedup(Core core) {
         float divide = 1.0f;
         if (env.getParallelMode(core)) {
-            divide = core.getNumNeighbors();
+            divide = max(divide, core.getNumNeighbors());
         }
         return divide;
     }
@@ -62,7 +64,7 @@ public class Estimator {
     // estimates time the message needs to be send from Core from to Core to
     // 20ns per each connection between these
     public float getJourneyTime(Core from, Core to) {
-        return normal(JOURNEY, JOURNEY*0.2f) * env.getProcessorArchitecture().getDistance(from, to);
+        return normal(JOURNEY, JOURNEY*0.2f) * env.getProcessorArchitecture().getDistance(from, to) / getParallelSpeedup(to);
     }
 
     public float getUnPackageTime(Core core, Message m) { // 2 nanoseconds for unpacking

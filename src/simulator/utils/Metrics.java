@@ -21,4 +21,8 @@ public class Metrics {
     public double getWorkPerformed() {
         return this.workPerformed;
     }
+
+    public String toString() {
+        return String.valueOf(this.executionTime) + ' ' + this.workPerformed;
+    }
 }

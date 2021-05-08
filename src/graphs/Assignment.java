@@ -36,11 +36,8 @@ public class Assignment {
         ArrayList<Float> coordsX = g.getXCoords();
         ArrayList<Float> coordsY = g.getYCoords();
 
-        ArrayList<Float> sortedX = new ArrayList<>();
-        Collections.addAll(coordsX);
-
-        ArrayList<Float> sortedY = new ArrayList<>();
-        Collections.addAll(coordsY);
+        ArrayList<Float> sortedX = new ArrayList<>(coordsX);
+        ArrayList<Float> sortedY = new ArrayList<>(coordsY);
 
         Collections.sort(sortedX);
         Collections.sort(sortedY);
@@ -48,7 +45,6 @@ public class Assignment {
         int N_ROW = (int)sqrt(N_CORES);
         int BARRIER = g.N / N_ROW;
         if (BARRIER * N_ROW < g.N) ++BARRIER;
-
         for (int i=0; i<g.N; ++i) {
             int pos_x = Collections.binarySearch(sortedX, coordsX.get(i));
             int pos_y = Collections.binarySearch(sortedY, coordsY.get(i));
