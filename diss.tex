@@ -66,22 +66,35 @@ Computer Science Tripos -- Part II \\[5mm]
 Trinity College \\[5mm]
 \today  % today's date
 \end{center}
-
+\newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Proforma, table of contents and list of figures
 
 \pagestyle{plain}
+\section*{Declaration}
+
+I, Kacper Walentynowicz of Trinity College, being a candidate for Part II of the Computer Science Tripos, hereby declare that this dissertation and the work described in it are my own work, unaided except as may be specified below, and that the dissertation does not contain material that has already been used to any substantial extent for a comparable purpose. I am content for my dissertation to be made available to the students and staff of the University.
+
+\bigskip
+\leftline{Signed}
+\vspace{20pt}
+\par\noindent\rule{\textwidth}{0.4pt}
+
+\medskip
+\leftline{Date}
+\vspace{20pt}
+\par\noindent\rule{\textwidth}{0.4pt}
 
 \chapter*{Proforma}
 
 {\large
 \begin{tabular}{ll}
-Name:               & \bf Kacper Walentynowicz                       \\
-College:            & \bf Trinity College                     \\
-Project Title:      & \bf TBA \\
+Candidate number:               & \bf 2339B                       \\
+Project Title:      & \bf Parallel route-finding algorithms for road networks \\
 Examination:        & \bf Computer Science Tripos -- Part II, July 2021  \\
 Word Count:         & \bf TBA\footnotemark[1]
                       (well less than the 12000 limit)  \\
+Code line count:   & \bf TBA \\                
 Project Originator: & Dr Jagdish Modi                    \\
 Supervisors:         & Dr David Greaves, Dr Jagdish Modi                     \\ 
 \end{tabular}
@@ -103,21 +116,6 @@ I have successfully implemented the tool which allows simulation of algorithms o
 \section*{Special Difficulties}
 
 None.
- 
-\newpage
-\section*{Declaration}
-
-I, Kacper Walentynowicz of Trinity College, being a candidate for Part II of the Computer Science Tripos, hereby declare that this dissertation and the work described in it are my own work, unaided except as may be specified below, and that the dissertation does not contain material that has already been used to any substantial extent for a comparable purpose. I am content for my dissertation to be made available to the students and staff of the University.
-
-\bigskip
-\leftline{Signed}
-\vspace{20pt}
-\par\noindent\rule{\textwidth}{0.4pt}
-
-\medskip
-\leftline{Date}
-\vspace{20pt}
-\par\noindent\rule{\textwidth}{0.4pt}
 
 \newpage
 \section*{Acknowledgements}
@@ -485,7 +483,7 @@ But Java also has drawbacks, and I couldn't imagine doing evaluation in Java. Th
 
 Throughout the project I have been meeting regularly with my supervisors. Usually had a meeting once a week with either Dr Modi (Tuesdays), or Dr Greaves (Wednesdays). Additionally, during Michealmas and Lent terms my Directors of Studies held short ($10$ minutes) update meetings, where I would present recent developments in the project. When doing the work itself, I tried to follow the division suggested in my project proposal - biweekly sprints, but a few changes arose. The simulator work took longer than I had anticipated (partially because I made it much more sophisticated than originally planned), but later I caught up as the work on algorithms went faster than anticipated. I have also switched the order of implementing parallel Dijkstra and MatMul algorithms, as the latter seemed less  error-prone.  
 
-I have also made use of tools with version-control systems to ensure that nothing gets lost. The code written in my GitHub repository was frequently committed and pushed, so that the changes persist even in case of hardware failures. For writing my dissertation I have used Overleaf - a free online \LaTeX editor which allows real-time preview and collaboration on the documents, annotating the text with pop-up comments and even features a version control system. Although I have been using the tool for many years and I generally trust Overleaf's cloud, the dissertation is a good moment to become paranoid - so I have been doing additional backups daily on my machine and pushing the latest version to GitHub to be 101\% sure of not losing the work.
+I have also made use of tools with version-control systems to ensure that nothing gets lost. The code written in my GitHub repository was frequently committed and pushed, so that the changes persist even in case of hardware failures. For writing my dissertation I have used Overleaf - a free online \LaTeX editor which allows real-time preview and collaboration on the documents, annotating the text with pop-up comments and even features a version control system. All of these features turned out to be very useful, especially in the unusual case of remote supervisions. Although I have been using the tool for many years and I generally trust Overleaf's cloud, the dissertation is a good moment to become paranoid - so I have been doing additional backups daily on my machine and pushing the latest version to GitHub to be 101\% sure of not losing the work.
 
 \section{Repository overview}
 Let's start with the figure which gives a directory structure of my project. Crucially, the diagram does not mention every single Java class. I have followed a modular approach where classes have single responsibilities. The diagram is much clearer if I include just example files. A full diagram is provided as Appendix A. Every piece source code present in that diagram was written by me, except for \textit{FibonacciHeap.java} whose author is Keith Schwarz\footnote{htiek@cs.stanford.edu}. Throughout the chapter I am going to describe what various building blocks are, what assumptions they take, and how they interact with each other.
@@ -583,12 +581,12 @@ public class MasterCore extends Core {
 }
 \end{lstlisting}
 
-The \texttt{Core} class provides primitives mentioned in the requirements analysis with a few additional ones: operations for primitives, naive multiplication of matrices, as well as sending as receiving messages from other cores. I have also added utilities for data structures residing in local memory of the cores: arrays and heaps. Each operation is tracked and measured by the evaluation environment. I have decided not to reinvent the wheel and the data structures subclass standard Java classes (which guarantees no bugs in their behaviour). The instrumentation to find the communication overhead adds only a simple call to the simulator's tracking class\footnote{More about tracking and costs of operations in the section about Estimators}. This way I have achieved the goal of simplicity: the programmer can write nearly the same code as they would normally write in Java. The only exception is that operations done by cores need to be wrapped in the \texttt{execute()} method of class \texttt{Task}.
+The \texttt{Core} class provides primitives mentioned in the requirements analysis with a few additional ones: operations for primitives, naive multiplication of matrices, as well as sending and receiving messages from other cores. I have also added utilities for data structures residing in local memory of the cores: arrays and heaps. Each operation is tracked and measured by the evaluation environment. I have decided not to reinvent the wheel and the data structures subclass standard Java classes (which guarantees no bugs in their behaviour). The instrumentation to find the communication overhead adds only a simple call to the simulator's tracking class\footnote{More about tracking and costs of operations in the section about Estimators}. This way I have achieved the goal of simplicity: the programmer can write nearly the same code as they would normally write in Java. The only exception is that operations done by cores need to be wrapped in the \texttt{execute()} method of class \texttt{Task}.
 
 \texttt{Processor architecture} class provides methods to specify the network of interconnections between the cores. This is important as far as communication is concerned, as processing elements communicate along these connections. To reflect that indirect message-passing might take place as well, the distance between the cores is assumed to be the length of the shortest path in the graph of interconnections, although a message following a non-direct path of course needs more time than using a direct connection.
 
 \subsection{Message passing}
-The cores have methods to send and receive messages. The behaviour of these is implemented in the \texttt{CommunicationHandler} and \texttt{SingleConnectionHandler} classes. The former manages all possible connections, and \texttt{ConcurrentHashMap} to guarantee thread-safety and efficiency. The latter uses a \texttt{ConcurrentLinkedQueue} and implements a simple producer-consumer relationship. It assumes that messages sent between the same pair (source, destination) are delivered in order. The \texttt{Message} itself can be arbitrary - it contains a list of objects. Receiving a message is a blocking operation, though trying to receive a message sent by another node in the same phase is an error in the algorithm violating the assumptions.
+The cores have methods to send and receive messages. The behaviour of these is implemented in the \texttt{CommunicationHandler} and \texttt{SingleConnectionHandler} classes. The former manages all possible connections, and \texttt{ConcurrentHashMap} to guarantee thread-safety and efficiency. The latter uses a \texttt{ConcurrentLinkedQueue} and implements a simple producer-consumer relationship. It assumes that messages sent between the same pair (source, destination) are delivered in order. The \texttt{Message} itself can be arbitrary - it contains a list of objects. Receiving a message is a blocking operation, though trying to receive a message sent by another node in the same phase would be a violation of the assumptions anyway.
 
 Certain algorithms may benefit from some sort of hardware broadcast. This can be achieved with core's \texttt{setParallelMode()} method, which makes the Estimator adjust the operation costs. 
 
@@ -597,7 +595,9 @@ During the execution, we measure how much time has elapsed on each of the cores 
 
 As a rule of thumb, whenever some operation is done by one of the cores, it is being tracked by an object of class \texttt{Tracker}, which takes appropriate action. There are two cases in which synchronizing the times may be needed: upon receiving a message and upon ending a Phase. Receiving a message send at time $t_0$ whose journey time was $t_1$ is not possible before the time $t_0+t_1$. Ending a Phase may serve as a thread barrier - the time on each core is set to the maximal among all cores. As chaotic relaxation algorithms benefit from relaxing this constraint, the synchronization after a phase is optional.
 
-Various costs associated with operations are estimated by an object of the \texttt{Estimator} class. In the default implementation memory access \& ALU operation latency, message processing and propagation delays, and data structure operation costs need to be estimated. The last one of these decreases the granularity and is probably the most unsatisfactory assumption which I had made. On the other hand, removing it would require implementing the data structures with the primitives provided rather than simply subclassing Java implementations... I still have mixed feelings about this decision - after all the implementations and their efficiencies may differ too; it's easier to change the estimation to a better one than need to reimplement the data structures.
+Various costs associated with operations are estimated by an object of the \texttt{Estimator} class. In the default implementation memory access \& ALU operation latency, message processing and propagation delays, and data structure operation costs need to be estimated. 
+
+The last one of these decreases the granularity and can be seen as an unsatisfactory assumption. However, removing it would require implementing the data structures with the primitives provided rather than instrumenting Java implementations. The implementations and their efficiencies may differ; it's easier to change the estimation to a better one than need to reimplement the data structures. Forcing the potential user to change the behaviour of simulator's internals just to get different measurements would also violate principles of good software design, hence I did not choose this option.
 
 The default estimations are discussed in the \textit{Evaluation} chapter, as they belong there more naturally. The goal of my implementation was to provide ways of measuring different circumstances easily, and this has been achieved.
 
@@ -633,7 +633,7 @@ Let's initially consider the simplified scenario in which we have exactly $n^2$ 
 
 Toroidal interconnections have been of interest for years. They are a natural choice for many matrix-processing algorithms, have low latency and energy consumption. Their disadvantages include difficult wiring of wrap-around connections and costly communication between distant pairs of processing elements. Cannon's algorithm\cite{cannon} for multiplying matrices with processing elements (PEs) works out nicely.
 
-The goal is to have the processing element $P_{ij}$ compute $C_{ij}=\sum_{k=0}^{n-1} A_{ik}\cdot B_{kj}$. It would be to unreasonable to assume that the processing elements have efficient random access to the entire matrices. Instead, we need to cleverly move the data around.
+The goal is to have the processing element $PE_{ij}$ compute $C_{ij}=\sum_{k=0}^{n-1} A_{ik}\cdot B_{kj}$. It would be to unreasonable to assume that the processing elements have efficient random access to the entire matrices. Instead, we need to cleverly move the data around.
 
 The calculation will be done in $n$ steps. In each of the steps, $PE_{ij}$ will be adding $A_{ik}\cdot B_{kj}$ for some $k$. Crucially, the order of additions for different PEs will not be the same. The key is to use diagonals and permute them appropriately. A good diagram is worth a thousand words of explanation. 
 
@@ -656,7 +656,7 @@ The calculation will be done in $n$ steps. In each of the steps, $PE_{ij}$ will 
 1 & 2 & 0
 \end{bmatrix}
 \end{equation}
-It is easy to see that $P_{ij}$ starts by doing the addition for $k=(i+j)$ mod $n$, and between the steps the value increases by one (modulo $n$). The movement described above corresponds to this computation: 
+It is easy to see that $PE_{ij}$ starts by doing the addition for $k=(i+j)$ mod $n$, and between the steps the value increases by one (modulo $n$). The movement described above corresponds to this computation: 
 \begin{equation}
 \resizebox{0.9\hsize}{!}{$
 \begin{bmatrix}
@@ -686,7 +686,7 @@ The movement of data is remarkably simple: between the iterations elements of ma
 \caption{Parallel Matrix Multiplication}\label{matmulparallel}
 \begin{algorithmic}[1]
 \Procedure{CannonMatMul(A, B, n)}{}
-\For{\textbf{each} processing element $P_{ij}$ \textbf{concurrently}}
+\For{\textbf{each} processing element $PE_{ij}$ \textbf{concurrently}}
 \State $k \gets (i+j)$ mod $n$
 \State $tempA_{ij} \gets A_{ik}$
 \State $tempB_{ij} \gets B_{kj}$
@@ -744,7 +744,7 @@ Let's recall the pseudocode of SimpleParallelDijkstra.
 
 In line $5$ there is a mysterious function $\rm{assign\_nodes\_to\_workers()}$. The authors of \textit{A parallelization of Dijkstra's shortest path algorithm} \cite{dijkstra} suggest a random initialization in order to prove that theoretical bounds occur with high probability. I have initially followed their description, but later decided to examine an improvement which aims to optimize the communication costs. Since it's an improvement to both Dijkstra's and SPFA algorithms, the description follows in section 3.7. For now, a mapping of nodes to workers is chosen uniformly at random for each node. The graph is then partitioned according to this mapping in a node-centric way: each worker knows about the subgraph induced by its nodes.
 
-Instead of a maintaining a global priority queue, it is better that each of the workers maintains its own, local priority queue which is going to hold nodes assigned to it sorted by the current distance. This liquidates the need for implementing parallel data structures. Additionally, another priority queue is kept at each node to calculate minimum of the expression $dist[u] + OUT(u)$, where $OUT(u)$ was the minimal weight of an edge going out of $u$. 
+Instead of a maintaining a global priority queue, it is better when each of the workers maintains its own, local priority queue which is going to hold nodes assigned to it sorted by the current distance. This liquidates the need for implementing parallel data structures. Additionally, another priority queue is kept at each node to calculate minimum of the expression $dist[u] + OUT(u)$, where $OUT(u)$ was the minimal weight of an edge going out of $u$. 
 
 The main while loop of the parallel Dijkstra's algorithm works in four phases:
 
@@ -802,11 +802,9 @@ After the fourth step is executed, vertex $v$ may never be put in the queue agai
 
 If the queues and arrays are local to cores this problem disappears, as there is only one core capable of manipulating data about node $v$. This design looks superior to the other one, as not imposing sequential consistency rules may be crucial for performance of this chaotic relaxation algorithm. The cores can just operate asynchronously until they have no more changes to process.
 
-To conclude this section, I am presenting a code snippet from \texttt{SPFA.java} demonstrating the implementation.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% TODO : Add the snippet %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% TODO : Add a better ending here? %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Optimizing communication costs for SPFA and Dijkstra}
 Although choosing the mapping of nodes to processing elements in the function $\rm{assign\_nodes\_to\_workers()}$ randomly is satisfactory, we could try to improve beyond random. If we assign entirely at random, then the processing elements need to send the messages all around the network of interconnections. It would be better if most of the graph's edges connected nodes assigned to the same processing element, or at least to a neighboring one.
@@ -826,7 +824,7 @@ Usefulness of this modification is measured in the \textit{Evaluation} chapter.
 \section{Testing the code}
 Parallel programs can be difficult to debug, as they can manifest subtle bugs in bizarre ways. In this section I am addressing the difficulties of testing the code for correctness. Performance evaluation follows in the next chapter.
 
-Throughout the project I have been using test-driven development for testing the algorithms. I have prepared the graphs for test runs early on. Each of the algorithms was be tested on six small road networks of New York city center. The smallest one had just $3$ nodes and $2$ edges and was useful for verifications on paper - if the issue was major\footnote{Example bug: forgetting to collect the results from processing elements}, it would appear on a testcase easy to follow by hand. The largest of the graphs had $27$ nodes and $64$ edges.
+Throughout the project I have been using test-driven development for testing the algorithms. I have prepared the graphs for test runs early on. Each of the algorithms was tested on six small road networks of New York city center. The smallest one had just $3$ nodes and $2$ edges and was useful for verifications on paper - if the issue was major\footnote{Example bug: forgetting to collect the results from processing elements}, it would appear on a testcase easy to follow by hand. The largest of the graphs had $27$ nodes and $64$ edges.
 
 Each of the algorithms was asked to calculate all pairs of shortest paths for these graphs and verified against the model answer. This model answer was computed with networkX's \texttt{shortest\_path\_length()} function. To account for floating-point errors, results $a$ and $b$ were considered to be equal if $abs(a-b) < \epsilon$. The value of $\epsilon$ was chosen to be $10^{-3}$.
 
@@ -834,12 +832,9 @@ Each test was run on the evaluation environment in a single-threaded and multi-t
 
 Altogether, this test set achieved $99\%$ coverage of lines for the algorithms package\footnote{calculated with the run-with-coverage feature of IntelliJ IDEA}, and $100\%$ coverage of classes and methods. The same tests also cover a significant chunk of the simulator modules which achieve over $80\%$ of coverage. This is partially because there are a few simple methods and functionalities which I had implemented, but ended up not being used in the implementation of the algorithms.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% I actually need to implement the thing below!!
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 One more difficult challenge remained. The evaluation environment outputs a number as a measurement, how can we be sure that it is the appropriate one? 
 
-The modular approach taken helped me to verify this. I wrote a very simple program which performed the operations available in an order. If I wanted to verify that operation X was tracked and counted correctly, I could supply an Estimator which assessed the cost of operation X as $1$, and the costs of all the other operations as $0$. The result was then compared with the number of operations X the code performs. Doing such a test for all the simulator's primitives was a sanity check that the measurements provided are legitimate.
+The modular approach taken helped me to verify this. I wrote various simple programs which performed the operations available in some order. If I wanted to verify that operation X was tracked and counted correctly, I could supply an Estimator which assessed the cost of operation X as $1$, and the costs of all the other operations as $0$. The result was then compared with the number of operations X the code performs. Doing such a test for all the simulator's primitives was a sanity check that the measurements provided are legitimate.
 
 The tests, following the Arrange-Act-Assert design pattern, were implemented with the features of JUnit testing library. I have not set up a continuous integration pipeline, as clicking the IntelliJ \texttt{run} button seemed sufficient for the needs of this project.
 
@@ -872,8 +867,10 @@ public void testDijkstraSmallTest0() {
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Evaluation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Theoretical complexities}
-This is going to be SHORT. Mat mul is trivial, dijkstra is super complicated and SPFA is unproven... Is it even necessary? 
+The project set out to explore three different approaches to the shortest path problem, implement the ideas associated with their proposed parallel adaptations. All four components have been delivered and thoroughly described in the dissertation -- the evaluation environment, Matrix Multiplication, Dijkstra's and SPFA algorithms. They have been tested according to the methodology described in section 3.8. It remains to provide a comparison of their performance, which this chapter is aiming to achieve. At first, we are focusing on the All-Pairs Shortest Paths problem as a common ground, as MatMul algorithm does not provide means to solve the Single-Source Shortest Path problem alone. SSSP algorithms are more versatile, as they can be repeated for each possible source. Later, the comparison of the two SSSP algorithms on larger graph instances follows.
+
+\section{Computational complexity}
+This is going to be SHORT. Mat mul is trivial, dijkstra is super complicated and SPFA is unproven... Is it even necessary?
 
 \section{Execution times}
 Plots related solely to execution times go here. Will try to write models and fit with scikit-learn.
