@@ -70,6 +70,9 @@ public class Matrix implements Cloneable {
 
         return ret;
     }
+    public int n_elements() {
+        return this.N * this.N;
+    }
 
     public void toFile(String filename) {
         try {

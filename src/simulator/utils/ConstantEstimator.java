@@ -28,13 +28,11 @@ public class ConstantEstimator extends Estimator {
         return PACK * m.getSize()/ getParallelSpeedup(core);
     }
 
-    // estimates time the message needs to be send from Core from to Core to
-    // 20ns per each connection between these
     public float getJourneyTime(Core from, Core to) {
         return JOURNEY * env.getProcessorArchitecture().getDistance(from, to) / getParallelSpeedup(to);
     }
 
-    public float getUnPackageTime(Core core, Message m) { // 2 nanoseconds for unpacking
+    public float getUnPackageTime(Core core, Message m) {
         return UNPACK * m.getSize()/ getParallelSpeedup(core);
     }
 }

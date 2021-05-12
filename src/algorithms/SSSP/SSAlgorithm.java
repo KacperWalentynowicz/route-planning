@@ -18,6 +18,12 @@ public class SSAlgorithm {
         return policy.getShortestPathsFromSource(distances, g, source);
     }
 
+    public Pair<GlobalArray, Metrics> getShortestPathsFromSource(Graph g, int source) {
+        GlobalArray distances = new GlobalArray(g.N);
+        Metrics results = getShortestPathsFromSource(distances, g, source);
+        return new Pair(distances, results);
+    }
+
     public Pair<Matrix, Metrics> getAllPairsShortestPaths(Graph g) {
         double total = 0.0;
         Metrics executionResults = new Metrics(0.0, 0.0);

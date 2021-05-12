@@ -104,14 +104,14 @@ public class Lattice extends ProcessorArchitecture {
         }
 
         for (int i=0; i<N_CORES; ++i) {
-            if (method.equals("Cannon")) {
-                addCore(new CannonCore(env, i));
-            }
             if (method.equals("Dijkstra")) {
                 addCore(new DijkstraCore(env, i));
             }
-            if (method.equals("SPFA")) {
+            else if (method.equals("SPFA")) {
                 addCore(new SPFACore(env, i));
+            }
+            else {
+                addCore(new CannonCore(env, i));
             }
         }
 

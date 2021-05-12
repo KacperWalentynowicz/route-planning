@@ -1,5 +1,7 @@
 package simulator.utils;
 
+import graphs.Matrix;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +25,17 @@ public class Message {
     }
 
     public int getSize() {
-        return contents.size();
+        int res = 0;
+        for (Object o : contents) {
+            if (o instanceof Matrix) {
+                res += ((Matrix) o).n_elements();
+            }
+            else {
+                res += 1;
+            }
+        }
+
+        return res;
     }
 
     public ArrayList<Object> getContents() {

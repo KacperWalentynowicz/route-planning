@@ -10,7 +10,7 @@ public class Estimator {
     protected float PACK = 3.0f;
     protected float UNPACK = 3.0f;
     protected float JOURNEY = 20.0f;
-    protected float PQ = 25.0f;
+    protected float PQ = 10.0f;
     private Random rng;
 
     private float normal(float mean, float stddev) {
@@ -45,11 +45,11 @@ public class Estimator {
     }
 
     public float getMemTime(Core core) { // 1 nanosecond for a simple ALU operation
-        return normal(MEM, MEM*0.2f) / getParallelSpeedup(core);
+        return normal(MEM, MEM*0.1f) / getParallelSpeedup(core);
     }
 
     public float getALUTime(Core core) { // 1 nanosecond for a simple ALU operation
-        return normal(ALU, ALU*0.2f)/ getParallelSpeedup(core);
+        return normal(ALU, ALU*0.1f)/ getParallelSpeedup(core);
     }
 
     public float getPQTime(Core core) { // 1 nanosecond for a simple ALU operation
@@ -58,16 +58,16 @@ public class Estimator {
 
 
     public float getPackageTime(Core core, Message m) { // 2 nanoseconds for packaging the message
-        return normal(PACK, PACK*0.2f) * m.getSize() / getParallelSpeedup(core);
+        return normal(PACK, PACK*0.1f) * m.getSize() / getParallelSpeedup(core);
     }
 
     // estimates time the message needs to be send from Core from to Core to
     // 20ns per each connection between these
     public float getJourneyTime(Core from, Core to) {
-        return normal(JOURNEY, JOURNEY*0.2f) * env.getProcessorArchitecture().getDistance(from, to) / getParallelSpeedup(to);
+        return normal(JOURNEY, JOURNEY*0.1f) * env.getProcessorArchitecture().getDistance(from, to) / getParallelSpeedup(to);
     }
 
     public float getUnPackageTime(Core core, Message m) { // 2 nanoseconds for unpacking
-        return normal(UNPACK, UNPACK*0.2f) * m.getSize() / getParallelSpeedup(core);
+        return normal(UNPACK, UNPACK*0.1f) * m.getSize() / getParallelSpeedup(core);
     }
 }
