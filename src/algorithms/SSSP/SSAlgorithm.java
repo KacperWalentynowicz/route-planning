@@ -26,7 +26,7 @@ public class SSAlgorithm {
 
     public Pair<Matrix, Metrics> getAllPairsShortestPaths(Graph g) {
         double total = 0.0;
-        Metrics executionResults = new Metrics(0.0, 0.0);
+        Metrics executionResults = new Metrics(0.0, 0.0, null);
         Matrix results = g.getAdjMatrix();
 
         for (int source=0; source<g.N; ++source) {

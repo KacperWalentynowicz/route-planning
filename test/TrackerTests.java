@@ -48,7 +48,7 @@ public class TrackerTests {
         }
         env.runPhase(send);
         this.env.finishEvaluation();
-        Metrics report = this.env.getTracker().getTotalTime();
+        Metrics report = this.env.getTracker().getMetrics();
         Assertions.assertEquals(2.0f, report.getExecutionTime());
     }
 
@@ -89,7 +89,7 @@ public class TrackerTests {
         env.runPhase(recv);
 
         this.env.finishEvaluation();
-        Metrics report = this.env.getTracker().getTotalTime();
+        Metrics report = this.env.getTracker().getMetrics();
         Assertions.assertEquals(1.0f, report.getExecutionTime());
     }
 
@@ -138,7 +138,7 @@ public class TrackerTests {
         env.runPhase(recv);
 
         this.env.finishEvaluation();
-        Metrics report = this.env.getTracker().getTotalTime();
+        Metrics report = this.env.getTracker().getMetrics();
         //the result should be 11
         Assertions.assertEquals(11.0f, report.getExecutionTime());
     }
@@ -187,7 +187,7 @@ public class TrackerTests {
         env.runPhase(recv);
 
         this.env.finishEvaluation();
-        Metrics report = this.env.getTracker().getTotalTime();
+        Metrics report = this.env.getTracker().getMetrics();
         //Contrary to the previous test, the result should be now 20 as the pipelined effect does not occur
         Assertions.assertEquals(20.0f, report.getExecutionTime());
     }

@@ -157,19 +157,32 @@ public class Evaluation {
             if (cores == 1) {
                 single_core = resultWithThisCore;
             }
+            List<Float> opCosts = resultWithThisCore.getOpCosts();
+            System.out.printf("%s %d %f %f, Speedup: %f\n", method, cores,
+                    resultWithThisCore.getExecutionTime() / ms_constant,
+                    resultWithThisCore.getWorkPerformed() / ms_constant,
+                    single_core.getExecutionTime() / resultWithThisCore.getExecutionTime());
 
-            System.out.printf("%s %d %f %f\n", method, cores, resultWithThisCore.getExecutionTime() / ms_constant, single_core.getExecutionTime() / resultWithThisCore.getExecutionTime());
             String[] info = {method,
                     String.valueOf(g.N),
                     String.valueOf(cores),
                     String.valueOf(resultWithThisCore.getExecutionTime() / ms_constant),
-                    String.valueOf(MEM),
-                    String.valueOf(ALU),
-                    String.valueOf(PACK),
-                    String.valueOf(JOURNEY),
-                    String.valueOf(PQ),
+                    String.valueOf(resultWithThisCore.getWorkPerformed() / ms_constant),
+                    String.valueOf(opCosts.get(0)/ms_constant), //MEM
+                    String.valueOf(opCosts.get(1)/ms_constant), //ALU
+                    String.valueOf(opCosts.get(2)/ms_constant), //PACK
+                    String.valueOf(opCosts.get(3)/ms_constant), //JOURNEY
+                    String.valueOf(opCosts.get(4)/ms_constant), //PQ
+                    String.valueOf(opCosts.get(5)/ms_constant), //WAIT
                     String.valueOf(single_core.getExecutionTime() / resultWithThisCore.getExecutionTime())
             };
+
+            System.out.printf("MEM: %f, ALU: %f, PACK: %f, JOURNEY: %f, PQ: %f, WAIT: %f\n", opCosts.get(0)/ms_constant,
+                    opCosts.get(1)/ms_constant,
+                    opCosts.get(2)/ms_constant,
+                    opCosts.get(3)/ms_constant,
+                    opCosts.get(4)/ms_constant,
+                    opCosts.get(5)/ms_constant);
 
             result.add(info);
         }
@@ -180,7 +193,7 @@ public class Evaluation {
     @Disabled
     @Test
     public void sensitivityAnalysis() throws IOException {
-        String[] headers = {"method", "N", "P", "execution_time", "MEM", "ALU", "PACK", "JOURNEY", "PQ", "speedup"};
+        String[] headers = {"method", "N", "P", "execution_time", "work_performed", "MEM", "ALU", "PACK", "JOURNEY", "PQ", "WAIT", "speedup"};
         List<String[]> data = new ArrayList<>();
         String[] methods = {"Dijkstra", "SPFA", "MatMul"};
         for (int tries = 0; tries < 10; ++tries) {
@@ -190,13 +203,13 @@ public class Evaluation {
                 Graph g = new Graph(location);
                 int[] cores_list = {1, 4, 9, 16, 25};
                 for (String method : methods) {
-                    List<String[]> runs = runAPSPWithParameters(g, method, cores_list, true, 0.5f, 2f, 3f, 3f, 20f, 10f);
+                    List<String[]> runs = runAPSPWithParameters(g, method, cores_list, true, 0.5f,  1f, 3f, 3f, 20f, 10f);
                     data.addAll(runs);
                 }
             }
         }
 
-        generateCSV("data/results-doubleALU.csv", headers, data);
+        generateCSV("data/results-sensitivity.csv", headers, data);
     }
 
     @Disabled

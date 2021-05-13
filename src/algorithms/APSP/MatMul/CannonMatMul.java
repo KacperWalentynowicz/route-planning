@@ -157,6 +157,6 @@ public class CannonMatMul extends MatMulPolicy{
         }
 
         res.assign(0, 0, tmp, res.N);
-        return env.getTracker().getTotalTime();
+        return env.getTracker().getMetrics();
     }
 }

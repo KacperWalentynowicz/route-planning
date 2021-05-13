@@ -18,7 +18,7 @@ public class MatMulAlgorithm {
     public Pair<Matrix, Metrics> getShortestPaths(Graph g) {
         Matrix distances = g.getAdjMatrix();
         env.startEvaluation();
-        Metrics executionTimes = new Metrics(0.0, 0.0);
+        Metrics executionTimes = new Metrics(0.0, 0.0, null);
 
         for (int correctupTo=1; correctupTo < g.N; correctupTo *= 2) {
             executionTimes.add(policy.multMin(distances, distances, distances));

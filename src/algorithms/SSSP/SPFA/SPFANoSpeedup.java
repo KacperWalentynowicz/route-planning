@@ -115,6 +115,6 @@ public class SPFANoSpeedup extends SSPolicy {
         }
 
         env.finishEvaluation();
-        return env.getTracker().getTotalTime();
+        return env.getTracker().getMetrics();
     }
 }

@@ -189,6 +189,6 @@ public class DijkstraNoSpeedup extends SSPolicy {
 
         }
         env.finishEvaluation();
-        return env.getTracker().getTotalTime();
+        return env.getTracker().getMetrics();
     }
 }

@@ -1,5 +1,5 @@
 % Template for a Computer Science Tripos Part II project dissertation
-\documentclass[12pt,a4paper,twoside,openright]{report}
+\documentclass[12pt,a4paper,oneside,openright]{report}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage[backend=biber]{biblatex}
@@ -20,9 +20,9 @@
 \usepackage{subcaption}
 \usepackage[labelformat=parens,labelsep=quad,skip=3pt]{caption}
 \usepackage{graphicx}
-    
+\usepackage[titletoc]{appendix}
 \makeatletter
-\def\BState{\State\hskip-\ALG@thistlm}
+\def\BState{\State\hskip-\ALG}
 \makeatother
 
 \raggedbottom                           % try to avoid widows and orphans
@@ -81,11 +81,13 @@ I, Kacper Walentynowicz of Trinity College, being a candidate for Part II of the
 \bigskip
 \leftline{Signed}
 \vspace{20pt}
+Kacper Walentynowicz
 \par\noindent\rule{\textwidth}{0.4pt}
 
 \medskip
 \leftline{Date}
 \vspace{20pt}
+13.05.2021
 \par\noindent\rule{\textwidth}{0.4pt}
 
 \chapter*{Proforma}
@@ -94,56 +96,50 @@ I, Kacper Walentynowicz of Trinity College, being a candidate for Part II of the
 \begin{tabular}{ll}
 Candidate number:               & \bf 2339B                       \\
 Project Title:      & \bf Parallel route-finding algorithms for road networks \\
-Examination:        & \bf Computer Science Tripos -- Part II, July 2021  \\
-Word Count:         & \bf TBA\footnotemark[1]
-                      (well less than the 12000 limit)  \\
-Code line count:   & \bf TBA \\                
+Examination:        & \bf Computer Science Tripos -- Part II, May 2021  \\
+Word Count:         & \bf 9960\footnotemark[1] \\
+Code line count:   & \bf 7288\footnotemark[2] \\                
 Project Originator: & Dr Jagdish Modi                    \\
-Supervisors:         & Dr David Greaves, Dr Jagdish Modi                     \\ 
+Project Supervisors:         & Dr David Greaves, Dr Jagdish Modi                     \\ 
 \end{tabular}
 }
-\footnotetext[1]{This word count was computed
-by \texttt{detex diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}
-}
+\footnotetext[1]{{counted with Overleaf's builtin feature using TeXCount}}
 \stepcounter{footnote}
-
+\footnotetext[2]{{counted with \texttt{git ls-files | xargs wc -l}. There are $6685$ lines in the source directory and $1185$ lines in the test directory. $582$ lines of source code written by external authors needed to be subtracted.}}
+\stepcounter{footnote}
 
 \section*{Original Aims of the Project}
 
-The original aim of the project was to study several existing approaches to extending known sequential shortest path algorithms for suitability for efficient parallel computation, and to provide their implementation. Because of difficulties in evaluating parallel algorithms, a goal of the project was also to build a simulator which would enable easy implementation and fair comparison of the implemented algorithms.
+The original aim of the project was to study several existing approaches to extending known sequential shortest path algorithms for suitability for efficient parallel computation, and to provide their implementations. Because of difficulties in evaluating parallel algorithms, a goal of the project was also to build a simulator which would enable easy implementation and fair comparison of the algorithms.
 
 \section*{Work Completed}
-
-I have successfully implemented the tool which allows simulation of algorithms on various parallel architectures. Then, I have met the other goals of the project by implementing and evaluating several parallel adaptations of known shortest path algorithms: Dijkstra's algorithm, Matrix multiplication algorithm and SPFA algorithm. I have then compared the parallel approaches taking into account both theoretical merits and disadvantages, as well as empirical evaluation on real-world road networks.
+The original aims of the project have been completed. I have successfully implemented a tool which allows simulation of algorithms on various parallel architectures. Then, I have met the other goals of the project by implementing and evaluating several parallel adaptations of known shortest path algorithms: Dijkstra's algorithm, Matrix multiplication algorithm and SPFA algorithm. I have then compared the parallel approaches taking into account both theoretical merits and disadvantages, as well as empirical evaluation on real-world road networks.
 
 \section*{Special Difficulties}
-
 None.
+%\newpage
+%\section*{Acknowledgements}
 
-\newpage
-\section*{Acknowledgements}
+%I am particularly thankful for the support of my two co-supervisors: Dr David Greaves and Dr Jagdish Modi. They have been helping me extensively throughout the project in different ways, both of which were valuable.
 
-I am particularly thankful for the support of my two co-supervisors: Dr David Greaves and Dr Jagdish Modi. They have been helping me extensively throughout the project in different ways, both of which were valuable.
+%I would like to thank Dr Geoff Boeing for providing the incredibly useful OSMNX library for working with OpenStreetMap data\cite{Boeing2017}.
 
-I would like to thank Dr Geoff Boeing for providing the incredibly useful OSMNX library for working with OpenStreetMap data\cite{Boeing2017}.
-
-Last but not least, I would like to thank my wife Marta, for her insightful comments on the dissertation, and never-ending willingness to participate in one-sided discussions about the project.
+%Last but not least, I would like to thank my wife Marta, for her insightful comments on the dissertation, and never-ending willingness to participate in one-sided discussions about the project.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % now for the chapters
 \tableofcontents
-
 \pagestyle{headings}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Introduction}
-How much algorithm redesign is needed for parallel architectures? It is certainly not an easy question to answer. For sequential machines, various No Free Lunch theorems \cite{free-lunch} establish that there is no algorithm perfect for all applications. This phenomenon is  visible in parallel systems where communication or synchronization costs may outweigh advantages arising from parallelization, especially if the problem instance is not large. Although there exist attempts at writing software capable of performing efficient parallelizations (such as MIT's pMapper \cite{pmapper}), designing efficient parallel algorithms remains an important challenge. In my project, I have chosen several known sequential algorithms for the shortest path problem and considered the tradeoffs associated with their parallel adaptations.
+How much algorithm redesign is needed for parallel architectures? It is certainly not an easy question to answer. For sequential machines, various No Free Lunch theorems \cite{free-lunch} establish that there is no algorithm perfect for all applications. This phenomenon is particularly visible in parallel systems where communication or synchronization costs may outweigh advantages arising from parallelization, especially if the problem instance is not large. Although there exist attempts at writing software capable of performing efficient parallelizations (such as MIT's pMapper \cite{pmapper}), designing efficient parallel algorithms remains an important challenge. In my project, I have chosen several known sequential algorithms for the shortest path problem and considered the tradeoffs associated with their parallel adaptations.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Importance of parallel algorithms}
 During several previous decades of computing, hardware engineers have been able to deliver better processors as quickly as Gordon Moore had anticipated in the 1970s. Recently, it seems like the boundaries can no longer be pushed as the Moore's Law has slowed down\cite{moore-law}, and programmers will need to resort to alternative ways of achieving speedup. The natural solution is using multiple workers; cores on a single machine or simply several machines communicating together. The most important benefits are energy efficiency and scalability. 
 
 The relationship between clock frequency and power used is non-linear, and therefore to achieve the same performance a single machine needs more energy than a parallel setup. Additionally, machines are suffering from von Neumann bottleneck. The processor and memory are separate, with data moving frequently between them. Latency increasing is an unavoidable consequence of physical distance between destinations, resistance of wires, and other key factors. 
 
-Importance of scalability in distributed systems also cannot be underestimated. The cost of adding new machines to already existing system is very cheap compared to improving processor designs. 
+Importance of scalability in distributed systems also cannot be underestimated. The cost of adding new machines to an already existing system is very cheap compared to improving processor designs. 
 However, parallel systems generate numerous other difficulties which I'm discussing in section 1.3.
 
 \section{Shortest path problem}
@@ -169,7 +165,7 @@ The most famous shortest path algorithm is arguably the Dijkstra's algorithm whi
 Another approach which proves efficient especially for dense graphs is to calculate shortest paths in a way which resembles matrix multiplication. Matrix multiplication exhibits a very high degree of parallelism, and therefore this simple method may have good parallel adaptations. Alternatively, one can also consider running one of the above SSSP algorithms $|V|$ times, once for each possible source vertex.
 
 \section{Challenges in parallelization}
-Parallelization of an algorithm is not an easy task. The two challenging issues are explained in the subsections. These are not the only ones, and there exist numerous others, for example the name alias problem.\footnote{It is not easy to determine which computations can be safely run in parallel. They may reference the same array indices which leads in race conditions. This touches the  undecidability of arithmetics problem.} Although they are of primary importance in the topic of autoparallelization, they are less relevant to my project.
+Parallelization of an algorithm is not an easy task. The two challenging issues are explained in the subsections. These are not the only ones, and there exist numerous others, for example the name alias problem.\footnote{It is not easy to determine which computations can be safely run in parallel. They may reference the same array indices which results in race conditions. This touches the  undecidability of arithmetics problem.} Although they are of primary importance in the topic of autoparallelization, they are less relevant to my project.
 
 \subsection{Importance of system architecture} 
 Suppose we are doing a computationally expensive task on a system with several workers who carry out tasks. In a perfect world, every worker would be able to perform their own work independently, and only report the result once they finish. Unfortunately, life is not perfect like that, and sometimes the workers need to collaborate - share data, report intermediate results, access the same resources, and so on. The costs of these operations may vary \textbf{orders} of magnitude, depending on what are the building blocks of our system. The following table shows the comparison among various possible operation costs\footnote{Author: Peter Norvig, director of research at Google. Table taken from the article: `\textit{Teach yourself programming in 10 years}'}.
@@ -188,7 +184,7 @@ One of the greatest challenges in automatic parallelization is loop-carried depe
 \section{Starting point}
 Prior to the project, I did not have much experience with parallel programming. Some principles and methods have been outlined in \textit{Concurrent and Distributed Systems} part IB course.
 
-Starting point of the project was nearly from level zero. Apart from reading shallowly about possible parallelizations of Dijkstra's algorithm. The only code which I had implemented, were sequential versions of Dijkstra's and SPFA algorithms to serve as a proof-of-concept that SPFA can compete with Dijkstra's algorithm in terms of performance even in the standard setup of sequential machines\footnote{See the section $2.3.3$ for details}.
+Starting point of the project was nearly from level zero. The only code which I had implemented were sequential versions of Dijkstra's and SPFA algorithms to serve as a proof-of-concept that SPFA can compete with Dijkstra's algorithm in terms of performance even in the standard setup of sequential machines\footnote{See the section $2.3.3$ for details}.
 
 \section{Requirements analysis}
 As described in the introduction, parallel algorithms are an interesting, but challenging topic. Because performance of algorithms is heavily influenced by system architecture, my project needs to consider these. Following initial analysis of the problem, I have decided that a key component of the project would be a simulator providing an evaluation environment for the algorithms.
@@ -197,25 +193,25 @@ The tool needed the following features:
 
 \begin{enumerate}
     \item Allow the abstract description of a parallel algorithm to be easily translated into a working code.
-    \item Provide functionalities for cores - entities which are going to perform work of our algorithms. These include basic primitives such as ALU\footnote{Arithmetic Logic Unit} operations, accessing local DRAM of the cores, as well as simple data structures for those: local arrays, queues, and sets. 
-    \item Provide means of communicating for the cores - either by passing messages (broadcast or core-core), or accessing shared data structures in memory.
+    \item Provide functionalities for cores - entities which are going to perform work of our algorithms. These include basic primitives such as ALU\footnote{Arithmetic Logic Unit} operations, accessing local memory of the cores, as well as simple data structures for those: local arrays, queues, and sets. 
+    \item Provide means of communicating for the cores - either by passing messages (broadcast or core to core), or accessing shared data structures in memory.
     \item Allow specifying the topology of interconnections to reflect that in real-world machines there is limited number of direct connection between workers.
     \item All of the operations should be implicitly tracked by the evaluation environment. The programmer should also be able to specify what the costs of various operations in the system are in order to test the algorithms in different circumstances.
-    \item Running the simulations using multiple threads of a physical machine (my laptop with an $8$-core processor), so that the computations do not run unreasonably long.
+    \item Running the simulations using multiple threads of a physical machine, so that the computations do not run unreasonably long.
     \item Allowing to run the simulations in single-threaded debug mode. There are lots of surprising concurrency bugs which can arise from incorrect implementations and are not easy to find. Therefore, a debug mode which allows deterministic execution could prove very useful.
 \end{enumerate}
 
 \section{Algorithms}
 In my project I have studied parallelizations of three different standard algorithms for shortest paths, and evaluated their relative tradeoffs. In this section I am briefly describing the sequential versions and the ideas associated with their efficient parallelizations. The exact division between \textit{Preparation} and \textit{Implementation} chapters is somewhat blurred, as understanding the algorithm, its exact requirements and limitations is the key part. Afterwards, translating the algorithm into the code running on the simulation environment should be rather smooth.
 
-In the descriptions of the algorithms I am assuming the standard conventions: the graph $G(V,E)$ has $N$ vertices labeled from $1$ to $N$ and $M$ edges of non-negative weights. If a path between the source does not exist, its length is $\infty$. In parallel algorithms, workers (called interchangeably `cores') are labeled from $1$ to $C$.
+In the descriptions of the algorithms I am assuming the standard conventions: the graph $G(V,E)$ has $N$ vertices labeled from $1$ to $N$ and $M$ edges of non-negative weights. If a path between the source and destination does not exist, its length is $\infty$. In parallel algorithms, workers (called interchangeably `cores') are labeled from $1$ to $C$.
 
 \subsection{Matrix multiplication}
-The first algorithm implemented by me was an algorithm based on matrix multiplication, let's call it MatMul. It is an All-Pairs shortest paths algorithm which calculates the answer in the array $dist[N][N]$. Its operation consists of $log(N)$ steps of dynamic programming.
+The first algorithm implemented was an algorithm based on matrix multiplication, let's call it MatMul for short. It is an All-Pairs Shortest Paths algorithm which calculates the answer in the array $dist[N][N]$. Its operation consists of $log(N)$ steps of dynamic programming.
 
 In the initialization phase, we calculate the shortest distance assuming that we are allowed to traverse no more than $1$ edge - the adjacency matrix.
 
-Now, let's assume we want to know what are the shortest paths if we are allowed to traverse no more than $2K$ edges, for some $K$. What does a path from $a$ to $b$ that uses no more than $2K$ edges consist of? A path from $a$ to some intermediary node $c$ of no more than $K$ edges, followed by a path from $c$ to $b$, also of no more than $K$ edges. We don't know what $c$ is, but we can simply consider all the options! 
+Now, let's assume we want to know what the shortest paths are if we are allowed to traverse no more than $2K$ edges, for some $K$. What does a path from $a$ to $b$ that uses no more than $2K$ edges consist of? A path from $a$ to some intermediary node $c$ of no more than $K$ edges, followed by a path from $c$ to $b$, also of no more than $K$ edges. We don't know what $c$ is, but we can simply consider all the options! 
 
 Therefore, given $dist_{K}[N][N]$ we can easily calculate $dist_{2K}[N][N]$. The following pseudocode solves our shortest path problem.
 
@@ -241,7 +237,7 @@ Therefore, given $dist_{K}[N][N]$ we can easily calculate $dist_{2K}[N][N]$. The
 \end{algorithmic}
 \end{algorithm}
 
-One can notice that the innermost loop resembles matrix multiplications with a switch of operators - sum over all elements is substituted with min, and we are adding two terms rather than multiplying. Talking formally, it just matrix multiplication over different algebraic fields. 
+One can notice that three innermost loops resemble matrix multiplications with a switch of operators - sum over all the elements is substituted with min, and we are adding two terms rather than multiplying. Talking formally, it is just matrix multiplication over different algebraic fields. 
 
 \begin{algorithm}
 \caption{MatMul}\label{matmul}
@@ -259,7 +255,7 @@ One can notice that the innermost loop resembles matrix multiplications with a s
 It is very clear what needs to be done to obtain an efficient parallel algorithm - write good matrix multiplication! For that, we can use Cannon's algorithm \cite{cannon}, which ensures that there is little unnecessary movement of data between iterations. The operation of Cannon's algorithm is described in the \textit{Implementation} section of MatMul, which would be almost empty if I included a description of Cannon's algorithm here. 
 
 \subsection{Dijkstra's algorithm}
-Dijkstra's algorithm is one of the most well known computer science algorithms taught in every course on standard algorithms, and therefore just recalling its pseudocode will suffice.
+Dijkstra's algorithm is one of the most well known computer science algorithms taught in every course on standard algorithms, and therefore just recalling its pseudocode (Algorithm \ref{dijkstra}) will suffice. The operation of updating the distances of nodes is usually called \textit{relaxation}.
 
 \begin{algorithm}
 \caption{Dijkstra's algorithm}\label{dijkstra}
@@ -286,9 +282,11 @@ Dijkstra's algorithm is one of the most well known computer science algorithms t
 \end{algorithmic}
 \end{algorithm}
 
-There is a notable difficulty in parallelizing this algorithm - in line $7$ nodes are being taken one after another in different iterations. There are lots of data dependencies, because changes in $dist$ may affect which nodes are extracted from the queue in the subsequent iterations. Nonetheless, there have been attempts at efficient parallelizations.
+There is a notable difficulty in parallelizing this algorithm - in line $7$ the nodes are being taken one after another in different iterations. Data dependencies arise, because changes in $dist$ may affect which nodes are extracted from the queue in the subsequent iterations. Nonetheless, there have been attempts at efficient parallelizations.
 
-$Q$ is a priority queue, typically implemented with a Fibonacci heap to guarantee $O(|E| + |V| log |V|)$ runtime. A simple approach for a parallel speedup would be to split the slow computation of selecting the vertex with minimal distance. In the initialization phase, we would like to partition the nodes for our workers, so that each node has exactly one worker assigned to it. Let, $assigned(u)$ be a function which returns the worker to whom node $u$ was assigned. Whenever line $7$ is executed, each of the workers would calculate minimal distance vertex independently, and afterwards they would communicate to find the global minimal distance vertex.
+$Q$ is a priority queue, typically implemented with a Fibonacci heap to guarantee $O(|E| + |V| log |V|)$ runtime. A simple approach for a parallel speedup would be to split the slow computation of selecting the vertex with minimal distance. 
+
+In the initialization phase, we would like to partition the nodes for our workers, so that each node has exactly one worker assigned to it. Let $assigned(u)$ be a function which returns the worker to whom node $u$ was assigned. Whenever line $7$ is executed, each of the workers would calculate minimal distance vertex independently, and afterwards they would communicate to find the global minimal distance vertex.
 
 There is a subtlety here: when a successful relaxation of edge $(u,v,w)$ is performed in line $11$, the worker $\rm{assigned(v)}$ must be made aware of this change. This can be resolved either by sending a message from $\rm{assigned(u)}$ to $\rm{assigned(v)}$, or by $\rm{assigned(v)}$ periodically scanning through distances of vertices it is responsible for rather than keeping them in a priority queue. Let's summarize the approach in a pseudocode.
 
@@ -322,16 +320,16 @@ There is a subtlety here: when a successful relaxation of edge $(u,v,w)$ is perf
 \end{algorithmic}
 \end{algorithm}
 
-Crauser et al. (1998) \cite{dijkstra} introduced a strong improvement. In their paper \textit{A Parallelization of Dijkstra's Shortest Path Algorithm} they describe another opportunity for exploiting parallelism. The idea is to run the algorithm in phases, and in each phase try to remove from $Q$ many vertices whose distance is never going to change.\footnote{unlike just one in the standard algorithm}
+Crauser et al.~(1998) \cite{dijkstra} introduced a strong improvement. In the paper \textit{`A Parallelization of Dijkstra's Shortest Path Algorithm'} the authors describe another opportunity for exploiting parallelism. The idea is to run the algorithm in phases, and in each phase try to remove from $Q$ many vertices whose distance is never going to change.\footnote{unlike just one in the standard algorithm}
 
-Let $OUT(u)$ be the minimal weight of an edge going out of $u$. If $dist[u]$ is guaranteed not to change, all vertices $v$ satisfying $dist[v] \leq dist[u] + OUT(u)$ can never be relaxed by $u$. At the beginning of each phase, we can calculate $L = min(dist[u] + OUT(u))$ among vertices $u$ present in $Q$. Then, all vertices $u$ satisfying $dist[u] \leq L$ can be removed from $Q$ simultaneously!\footnote{As $L$ is $min(dist[u] + OUT(u))$ over all nodes in $Q$, no node can relax any further}
+Let $OUT(u)$ be the minimal weight of an edge going out of $u$. If $dist[u]$ is guaranteed not to change, all vertices $v$ satisfying $dist[v] \leq dist[u] + OUT(u)$ can never be relaxed by $u$. At the beginning of each phase, we can calculate $L = min(dist[u] + OUT(u))$ among vertices $u$ present in $Q$. Then, all vertices $u$ satisfying $dist[u] \leq L$ can be removed from $Q$ simultaneously!\footnote{As $L$ is $min(dist[u] + OUT(u))$ over all nodes in $Q$, the above inequality holds for all nodes $v$ such that $dist[v]\leq v$ and no node can relax them any further}
 
-Crauser et al. (1998)\cite{dijkstra} prove that this optimization reduces with high probability the number of phases to $\sqrt{|V|}$ while staying work-efficient. In section $4$ of their paper, the parallel implementation is also suggested. I leave the details to the \textit{Implementation} chapter.
+Crauser et al.~(1998)\cite{dijkstra} prove that this optimization reduces with high probability the number of phases to $\sqrt{|V|}$ while staying work-efficient. In section $4$ of their paper, the parallel implementation is also suggested. I leave the details to the \textit{Implementation} chapter.
 
 \subsection{Shortest Path Faster Algorithm}
 Although one can extract a lot of parallelism from such a highly sequential algorithm like Dijkstra's, it may be better to design an algorithm with parallelism in mind. 
 
-Two most limiting factors of Dijkstra's algorithm are: the strong constraint that a vertex may never be relaxed again, and maintaining a priority queue. A relatively unknown algorithm which originated in the $1950$s\footnote{According to Wikipedia, the exact description (with a name algorithm D) can be found in:  Moore, Edward F. (1959).  `The shortest path through a maze'.  Proceedings of the International Symposium on the Theory of Switching.  Harvard University Press.  pp.  285–292. I have not managed to find the access to this resource and verify this information myself.} lacks these bottlenecks. A simple version of this algorithm abandons priority in the queue and performs relaxations as long as there are some possible.
+Two most limiting factors of Dijkstra's algorithm are: the strong constraint that a vertex may never be relaxed again, and maintaining a priority queue. A relatively unknown algorithm which originated in the $1950$s\footnote{According to Wikipedia, the exact description (with a name algorithm D) can be found in:  Moore, Edward F. (1959).  `The shortest path through a maze'.  Proceedings of the International Symposium on the Theory of Switching.  Harvard University Press.  pp.  285–292. I have not managed to get access to this resource and verify this information myself.} lacks these bottlenecks. A simple version of this algorithm abandons priority in the queue and performs relaxations as long as there are some possible.
 
 \begin{algorithm}
 \caption{Chaotic relaxation}\label{chaotic}
@@ -383,7 +381,7 @@ Correctness of the algorithm is obvious - the relaxations are going to be perfor
 \end{algorithmic}
 \end{algorithm}
 
-This tiny change gives an empirically fast algorithm, which is believed to work in $O(|E|)$ on random graphs. In recent years, SPFA has been popularized by fans of algorithmic competitions\footnote{and this is how I have heard about it first}, and it even has a Wikipedia page\footnote{https://en.wikipedia.org/wiki/Shortest\_Path\_Faster\_Algorithm}, but sources there appear to be several niche websites citing one another. Analyzing mathematically the expected runtime of SPFA is outside the scope of this project. Nonetheless, before the project I have carried out experiments to check behaviour of this algorithm on a large graph - California Road Network collected by various researches and introduced in \cite{CRN}. Nodes were put into the queue $7$ times on average, and the runtime was faster than Dijkstra's algorithm's. The initial experiments showed that not only was SPFA fast, but also promising in terms of parallel execution. This is because there are little restrictions on the order in which relaxations should be performed, which makes it suitable for parallel implementation.
+This tiny change gives an empirically fast algorithm, which is believed to work in $O(|E|)$ on random graphs. In recent years, SPFA has been popularized by fans of algorithmic competitions, and it even has a Wikipedia page\footnote{https://en.wikipedia.org/wiki/Shortest\_Path\_Faster\_Algorithm}, but sources there appear to be several niche websites citing one another, and one academic paper, available in Chinese only. Analyzing mathematically the expected runtime of SPFA on random graphs is outside the scope of this project. Nonetheless, before the project I have carried out experiments to check behaviour of this algorithm on a large graph - California Road Network collected by various researches and introduced in \cite{CRN}. Nodes were put into the queue $7$ times on average, and the runtime was faster than Dijkstra's algorithm's. The initial experiments showed that not only was SPFA fast, but also promising in terms of parallel execution. This is because there are little restrictions on the order in which relaxations should be performed, which makes it suitable for parallel implementation.
 
 Devising a parallel version is very natural, and uses a similar mapping of graph nodes to cores as parallel Dijkstra. 
 
@@ -415,12 +413,12 @@ Devising a parallel version is very natural, and uses a similar mapping of graph
 \end{algorithmic}
 \end{algorithm}
 
-There are several concurrency issues possible: $Q$ needs to be accessed by multiple workers, and collaboration on shared $dist$ array is required. The discussion is continued in the \textit{Implementation} chapter.
+There are several concurrency issues possible: $Q$ needs to be accessed by multiple workers, and collaboration on shared array $dist$ is required. The discussion is continued in the \textit{Implementation} chapter.
 
 \section{Reconstruction of paths}
 In section $2.3$ the algorithms calculate only the array of shortest distances, rather than all the paths. This simplifies the implementations and explanations. To give a full picture, this short section explains how to extend the algorithms to answer queries about the paths.
 
-We are going to introduce a predecessor array $pred[]$ which will maintain previous node on the shortest path. For Dijkstra's algorithm and SPFA it is sufficient to update $pred[]$ alongside with relaxations: when we are applying an update $dist[v] = dist[u] + w$, we also set $pred[v] = u$.
+We introduce a predecessor array $pred[]$ which will maintain previous node on the shortest path. For Dijkstra's algorithm and SPFA it is sufficient to update $pred[]$ alongside with relaxations: when we are applying an update $dist[v] = dist[u] + w$, we also set $pred[v] = u$.
 
 Contrary to the other two algorithms, in MatMul we can easily read the path between the source and destination in the right order by switching $pred$ to a successor matrix $succ$. The change in the algorithm is marginal, too. 
 
@@ -436,7 +434,7 @@ For initialization:$\displaystyle\mathop{\forall}_{a,b}succ[a][b] = b$. For the 
 \end{algorithm}
 Starting this way would not allow me to draw a connection betwen the algorithm and matrix multiplication so clearly.
 
-There is another, even easier approach which can be useful especially if tight memory constraints are an issue: calculating the predecessor (or successor) on the spot, just based on the distance array, as in Algorithm \ref{pathrec}. Once line $9$ is reached, $pred$ cannot be $None$, as there exists a previous vertex on the shortest path, and that vertex satisfies $dist[u] + w = dist[dest]$. This concludes the remark that with little additional effort, we can answer any shortest path query given array of distances.
+There is another, even easier approach which can be useful especially if tight memory constraints are an issue: calculating the predecessor (or successor) on the spot, just based on the distance array, as in Algorithm \ref{pathrec}. Once line $9$ is reached, $pred$ cannot be $None$, as there exists a previous vertex on the shortest path, and that vertex satisfies $dist[u] + w = dist[dest]$. This concludes the remark that with little additional effort, we can answer any shortest path query given the array of distances.
 
 \begin{algorithm}
 \caption{Reconstruction of paths}\label{pathrec}
@@ -467,9 +465,19 @@ To test shortest path algorithms, one needs graphs. I have decided to get my dat
 
 Let's finish the chapter with a demonstration of OSMNX's usefulness. Creating the plot below took me only a couple of minutes.
 
-\includegraphics[scale=0.6]{code-demo-osmnx.png}
-\begin{center}\includegraphics[scale=0.5]{camb-demo-osmnx.png}\end{center}
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.55]{code-demo-osmnx.png}
+    \caption{Code in jupyter notebook used to generate the plot below}
+    \label{code:Cambridge}
+\end{figure}
 
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.9]{camb-demo-osmnx.png}
+    \caption{Cambridge road network with a shortest path between two randomly chosen junctions}
+    \label{map:Cambridge}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Implementation}
@@ -480,15 +488,19 @@ My project consisted of two parts - developing the simulator to run the algorith
 
 The natural choice for implementing the project was Java. The language has excellent support for writing concurrent (I have used \textit{java.util.concurrent} extensively throughout the project) and object-oriented programs. It also had the advantage of being taught in Part IA and IB courses, so I didn't need to spend time learning a new language for the project.
 
-But Java also has drawbacks, and I couldn't imagine doing evaluation in Java. The results of running the algorithms were produced in the form of CSV files, so that I could then import them in Python easily. Python was a much better choice for doing data manipulations, comparisons and plotting. I had to use Python anyway if I wanted to make use of the aforementioned OSMnx module (I don't think that its ports to other languages exist). Altogether, I have written the entire project in Java with the exception of two Python scripts: \textit{graph\_download.py} and \textit{evaluation.py}. I have also made heavy use of the JetBrains IDEs (IntelliJ and PyCharm). I especially appreciated their capabilities for automatically resolving dependencies, imports and refactorings with usage search. Obeying builtin linter suggestions made me confident that the code follows good stylistic conventions.
+But Java also has drawbacks, and I couldn't imagine doing evaluation in Java. The results of running the algorithms were produced in the form of CSV files, so that I could then import them in Python easily. Python was a much better choice for doing data manipulations, comparisons and plotting. I had to use Python anyway if I wanted to make use of the aforementioned OSMnx module (I don't think that its ports to other languages exist). Altogether, I have written the entire project in Java with the exception of two Python notebooks: \textit{graph\_download.ipynb} and \textit{evaluation.ipynb}. I have also made heavy use of the JetBrains IDEs (IntelliJ and PyCharm). I especially appreciated their capabilities for automatically resolving dependencies, imports and refactorings with usage search. Obeying builtin linter suggestions made me confident that the code follows good stylistic conventions.
 
-Throughout the project I have been meeting regularly with my supervisors. Usually had a meeting once a week with either Dr Modi (Tuesdays), or Dr Greaves (Wednesdays). Additionally, during Michealmas and Lent terms my Directors of Studies held short ($10$ minutes) update meetings, where I would present recent developments in the project. When doing the work itself, I tried to follow the division suggested in my project proposal - biweekly sprints, but a few changes arose. The simulator work took longer than I had anticipated (partially because I made it much more sophisticated than originally planned), but later I caught up as the work on algorithms went faster than anticipated. I have also switched the order of implementing parallel Dijkstra and MatMul algorithms, as the latter seemed less  error-prone.  
+Throughout the project I have been meeting regularly with my supervisors. Usually had a meeting once a week with either Dr Modi (Tuesdays), or Dr Greaves (Wednesdays). Additionally, during Michealmas and Lent terms my Directors of Studies held short ($10$ minutes) update meetings, where I would present recent developments in the project. When doing the work itself, I tried to follow the division suggested in my project proposal - biweekly sprints, but a few changes arose. The simulator work took longer than I had anticipated (partially because I made it much more sophisticated than originally planned), but later I caught up as a better simulator allowed quicker implementation of algorithms. I have also switched the order of implementing parallel Dijkstra and MatMul algorithms, as the latter seemed less  error-prone.  
 
-I have also made use of tools with version-control systems to ensure that nothing gets lost. The code written in my GitHub repository was frequently committed and pushed, so that the changes persist even in case of hardware failures. For writing my dissertation I have used Overleaf - a free online \LaTeX editor which allows real-time preview and collaboration on the documents, annotating the text with pop-up comments and even features a version control system. All of these features turned out to be very useful, especially in the unusual case of remote supervisions. Although I have been using the tool for many years and I generally trust Overleaf's cloud, the dissertation is a good moment to become paranoid - so I have been doing additional backups daily on my machine and pushing the latest version to GitHub to be 101\% sure of not losing the work.
+I have also made use of tools with version-control systems to ensure that nothing gets lost. The code written in my GitHub repository was frequently committed and pushed, so that the changes would persist even in case of hardware failures. For writing my dissertation I have used Overleaf - a free online \LaTeX editor which allows real-time preview and collaboration on the documents, annotating the text with pop-up comments and even features a version control system. All of these features turned out to be very useful, especially in the unusual case of remote supervisions. Although I have been using the tool for many years and I generally trust Overleaf's cloud, writing the dissertation is a good occasion to become paranoid - so I have been doing additional backups daily on my machine and pushing the latest version to GitHub to be 101\% sure of not losing substantial amounts of work.
 
 \section{Repository overview}
-Let's start with the figure which gives a directory structure of my project. Crucially, the diagram does not mention every single Java class. I have followed a modular approach where classes have single responsibilities. The diagram is much clearer if I include just example files. A full diagram is provided as Appendix A. Every piece source code present in that diagram was written by me, except for \textit{FibonacciHeap.java} whose author is Keith Schwarz\footnote{htiek@cs.stanford.edu}. Throughout the chapter I am going to describe what various building blocks are, what assumptions they take, and how they interact with each other.
+Figure \ref{repo} presents a directory structure of my project. Crucially, the diagram mentions only example classes and files. I have followed a modular approach where classes have single responsibilities, as a result there are many different files. The diagram is much clearer if I include just example files. A full diagram is provided as Appendix A. Every piece of the source code present in that diagram was written by me, except for \texttt{FibonacciHeap.java} whose author is Keith Schwarz. The author permitted the usage of their work in other projects\footnote{Quoting directly from the author's website: \textit{~If you're interested in using any of this code in your applications, feel free to do so! You don't need to cite me or this website as a source, though I would appreciate it if you did.'}. More details can be found at: https://keithschwarz.com/interesting/}. 
 
+
+\begin{figure}[t]
+\caption{Repository overview diagram}
+\label{repo}
 \dirtree{%
 .1 route-planning.
 .2 data.
@@ -522,11 +534,19 @@ Let's start with the figure which gives a directory structure of my project. Cru
 .3 DijkstraMultiThreadedTests.java .
 .3 evaluation.ipynb.
 }
+\end{figure}
+
+
+The repository consists of three main directories: \texttt{simulator/}, \texttt{graphs/} and \texttt{algorithms/} logically separating the three different components of the project. Each of them is further subdivided into directories, as shown in figure \ref{repo}.
+Throughout the chapter I am describing what various building blocks are, what assumptions they take, and how they interact with each other.
 
 \section{Simulator}
 \subsection{Overview}
-The simulator provides an evaluation environment for the algorithms to run on. In this section I am describing its implementation, as well as the functions it provides for implementing the algorithms. Looking from a very high-level perspective, a parallel system consists of cores executing various operations provided. Additionally, a master core is introduced which is helpful for doing bookkeeping work.
-The algorithms are expressed in threaded code\footnote{not to be confused with multithreading} - they consist almost exclusively of calls to subroutines provided. Each core has access to its own local memory. One assumption taken is that local memories are insufficient to hold the entire graphs, but the graphs fit the total memory of the cores (rather than streamed from some external storage). Therefore, the cores need to communicate their data to other cores. They can do it through passing messages. Let's now proceed to describing the building blocks of the simulator.
+The simulator provides an evaluation environment to run the algorithms. In this section I am describing its internal implementation, as well as the functions it provides for implementing the algorithms. 
+
+The algorithms are expressed in threaded code\footnote{not to be confused with multithreading} - they consist almost exclusively of calls to subroutines provided. I considered writing a byte code representation of the algorithms to be executed by the processor element models instead, but I realised that a threaded code implementation was going to more efficient. This also avoided having to write a compiler. The essence of threaded code is that we don't model a program counter explicitly in the simulator. Instead, the program counter of the simulating core is directly used (this was a Java thread in my implementation). 
+
+Looking from a very high-level perspective, a parallel system consists of cores executing various operations provided. Each core has access to its own local memory. One assumption taken is that local memories are insufficient to hold the entire graphs, but the graphs fit the total memory of the cores (don't need to be streamed from some external storage). Therefore, the cores may need to communicate their data to other cores. They can do it through message--passing.
 
 \subsection{Tasks and Phases}
 Since the early days of computing, algorithms are expressed as sequences of phases in which certain tasks are done. In the simulator \texttt{Tasks} are classes for chunks of work to be done. They have a method \texttt{execute()} which allows to specify the operations to be done for the core, as in the example. It uses the provided simple matrix multiplication subroutine to multiply two matrices stored in local memory of some core. 
@@ -550,16 +570,17 @@ Additionally, there is a functionality for a task to be repeated. This feature i
 One subtlety arose in the design process. The single-threaded debug mode would deadlock if any of the Tasks contained operations that were blocking. I have investigated the possibility of using a Java package for coroutines to allow the execution to be suspended and resumed, but decided that adding it would be overly complicated for the needs and stuck to the assumption that Tasks execute non-blocking methods which run to completion (but they may, of course, in parallel with other tasks). In hindsight, this design decision did not turn out constraining.
 
 \subsection{Scheduler and task runners}
-The important requirement was that the algorithms are described in terms of operations on abstract cores. \texttt{Scheduler} and \texttt{TaskRunners} are responsible of handling that and running the computation on the physical machine. The \texttt{TaskRunner} class extends a java Thread and provides a way to run tasks from phases. \texttt{Scheduler} spawns these runners and manages them to ensure that the environment does not deadlock. Once all the tasks from a phase are executed, the Scheduler instructs the runners to finish polling new tasks from this phase and switch to the next one instead (or issues the command for runners to terminate).
+The important requirement was that the algorithms are described in terms of operations on abstract cores. \texttt{Scheduler} and \texttt{TaskRunners} are responsible of handling that and running the computation on the physical machine. The \texttt{TaskRunner} class extends a Java Thread and provides a way to run tasks from phases. \texttt{Scheduler} spawns these runners and manages them to ensure that the environment does not deadlock. Once all the tasks from a phase are executed, the \texttt{Scheduler} instructs the runners to finish polling new tasks from this phase and switch to the next one instead (or issues the command for runners to terminate).
 
-The asynchronous execution posed some challenges. Runners need to poll new tasks from the phase in a non-blocking way. Initially I just borrowed my own implementation of a queue done in practical 3 of FurtherJava course last year, but ultimately I've changed it to a  \texttt{ConcurrentLinkedQueue} from \texttt{java.util.concurrent} package, as it had the desired behaviour, too. Once all the running threads receive null tasks in the same phase, the phase is finished.
+The asynchronous execution posed some challenges. Runners need to poll new tasks from the phase in a non-blocking way. Initially I just borrowed my own implementation of a queue done in practical 3 of FurtherJava course last year, but ultimately I've changed it to a  \texttt{ConcurrentLinkedQueue} from \texttt{java.util.concurrent} package, as it had the desired behaviour, too. Once all the runners receive null tasks in the same phase, the phase is finished.
 
-The operation of scheduler and task runners follows closely the thread pool design pattern. Summing up, the implementation is hidden in \texttt{simulator/internal}; the programmer just needs to specify an appropriate number of threads. For my machine the optimal number is $8$, but better computers may benefit from using more threads. 
+The operation of scheduler and task runners follows closely the thread pool design pattern. Summing up, the implementation is hidden in \texttt{simulator/internal}; the programmer just needs to specify an appropriate number of threads. For my machine the optimal number is $8$, but better computers or cloud facilities may benefit from using more threads. 
 
 \subsection{Cores and processor architectures}
 In the simulator, cores are the entities performing the computations and communicating with each other. Depending on the system, the processing elements may be extremely simple, capable of only doing basic bit manipulations, or as powerful as a modern computer. My design principle was not to constrain the programming of algorithms too much. Talking in terms of Flynn's taxonomy\cite{Flynn}, I was aiming to support the MIMD design: each processing element operates asynchronously and independently of others, though might communicate with others via a network of interconnections. 
 
-\begin{figure}
+\begin{figure}[h]
+    \centering
   \caption{MIMD design. The diagram's source is Dr Modi's book \textit{Parallel algorithms and matrix computation} \cite{modibook}. I would like to thank the author for granting me permission to use it.}
   \includegraphics[scale=0.3]{modi-MIMD.png}
 \end{figure}
@@ -567,11 +588,12 @@ In the simulator, cores are the entities performing the computations and communi
 Tweaking this to support somewhat simpler SIMD architectures would be easy: one could specify tasks so that each core does the same simple operation. 
 
 \begin{figure}[h]
+  \centering
   \caption{SIMD design. The diagram's source is Dr Modi's book \textit{Parallel algorithms and matrix computation} \cite{modibook}. I would like to thank the author for granting me permission to use it.}
   \includegraphics[scale=0.3]{modi-SIMD.png}
 \end{figure}
 
-In both designs a master core may appear, though in SIMD ones it is essential. In my design, the \texttt{MasterCore} has the same capabilities as a normal core, but is serves a different purpose in the algorithms. It is useful especially for doing initialization and termination work, as well as some bookkeeping.
+In both designs a \texttt{MasterCore} may appear, though in SIMD ones it is essential. In my design, the \texttt{MasterCore} has the same capabilities as a normal core, but is serves a different purpose in the algorithms. It is useful especially for doing initialization and termination work, as well as some bookkeeping.
 
 \begin{lstlisting}[caption = {MasterCore.java}, language = Java , frame = trBL ,  , escapeinside={(*@}{@*)}]
 package simulator.utils;
@@ -584,17 +606,17 @@ public class MasterCore extends Core {
 
 The \texttt{Core} class provides primitives mentioned in the requirements analysis with a few additional ones: operations for primitives, naive multiplication of matrices, as well as sending and receiving messages from other cores. I have also added utilities for data structures residing in local memory of the cores: arrays and heaps. Each operation is tracked and measured by the evaluation environment. I have decided not to reinvent the wheel and subclassed the standard Java collections. This guaranteed no bugs in their behaviour. The instrumentation to find the communication overhead adds only a simple call to the simulator's tracking class\footnote{More about tracking and costs of operations in the section about Estimators}. This way I have achieved the goal of simplicity: the programmer can write nearly the same code as they would normally write in Java. The only exception is that operations done by cores need to be wrapped in the \texttt{execute()} method of class \texttt{Task}.
 
-\texttt{Processor architecture} class provides methods to specify the network of interconnections between the cores. This is important as far as communication is concerned, as processing elements communicate along these connections. To reflect that indirect message-passing might take place as well, the distance between the cores is assumed to be the length of the shortest path in the graph of interconnections, although a message following a non-direct path of course needs more time than using a direct connection.
+\texttt{Processor architecture} class provides methods to specify the network of interconnections between the cores. This is important as far as communication is concerned, as processing elements communicate along these connections. To reflect that indirect message-passing might take place as well, although a message following a non-direct path of course needs more time than using a direct connection. The distance between the cores is assumed to be the length of the shortest path in the graph of interconnections and used to calculate the cost of propagating the messages.
 
 \subsection{Message passing}
-The cores have methods to send and receive messages. The behaviour of these is implemented in the \texttt{CommunicationHandler} and \texttt{SingleConnectionHandler} classes. The former manages all possible connections, and \texttt{ConcurrentHashMap} to guarantee thread-safety and efficiency. The latter uses a \texttt{ConcurrentLinkedQueue} and implements a simple producer-consumer relationship. It assumes that messages sent between the same pair (source, destination) are delivered in order. The \texttt{Message} itself can be arbitrary - it contains a list of objects. Receiving a message is a blocking operation, though trying to receive a message sent by another node in the same phase would be a violation of the assumptions anyway.
+The cores have methods to send and receive messages. The behaviour of these is implemented in the \texttt{CommunicationHandler} and \texttt{SingleConnectionHandler} classes. The former manages all possible connections, and uses a \texttt{ConcurrentHashMap} to guarantee thread-safety and efficiency. The latter uses a \texttt{ConcurrentLinkedQueue} which implements a simple producer-consumer relationship. It assumes that messages sent between the same pair (source, destination) are delivered in order. The \texttt{Message} itself can be arbitrary - it contains a list of objects. Receiving a message is a blocking operation, and trying to receive a message sent by another node in the same phase would be a violation of the assumptions.
 
 Certain algorithms may use some sort of hardware broadcast, and I wanted to support this somehow. I have decided to create a method \texttt{setParallelMode()} which adjusts the measurements to behave as though the operations were achieved by parallel hardware.
 
 \subsection{Tracking operations and their costs}
 During the execution, we measure how much time has elapsed on each of the cores since the start. This is not the wall clock from the execution on the physical machine; it increases asynchronously throughout the simulation according to the operations the workers perform.
 
-As a rule of thumb, whenever some operation is done by one of the cores, it is being tracked by an object of class \texttt{Tracker}, which takes appropriate action. There are two cases in which synchronizing the times may be needed: upon receiving a message and upon ending a Phase. Receiving a message send at time $t_0$ whose journey time was $t_1$ is not possible before the time $t_0+t_1$. Ending a Phase may serve as a thread barrier - the time on each core is set to the maximum among all cores. As chaotic relaxation algorithms benefit from relaxing this constraint, the synchronization after a phase is optional.
+As a rule of thumb, whenever some operation is done by one of the cores, it is being tracked by an object of class \texttt{Tracker}, which takes appropriate action. There are two cases in which synchronizing the times may be needed: upon receiving a message and upon ending a phase. Receiving a message send at time $t_0$ whose propagation delay was $t_1$ is not possible before the time $t_0+t_1$. Ending a Phase may serve as a thread barrier - the time on each core is set to the maximum among all cores. As chaotic relaxation algorithms benefit from relaxing this constraint, the synchronization after a phase is optional.
 
 Various costs associated with operations are estimated by an object of the \texttt{Estimator} class. In the default implementation memory access \& ALU operation latency, message processing and propagation delays, and data structure operation costs need to be estimated. 
 
@@ -622,9 +644,9 @@ Running a phase of the algorithm is even simpler: \texttt{env.runPhase()}. Colle
 \section{Parallel matrix multiplication}
 Section 2.3.1 has been concluded with the remark that it is sufficient to implement an efficient parallel matrix multiplication algorithm which works for square matrices. In this section I am describing the details of this procedure.
 
-Our goal is to multiply two square matrices $A$ and $B$, each containing $n^2$ elements. Consistently with usual notations, their product $C=A\cdot B$ satisfies $C_{ij} = \sum_{k=0}^{n-1} A_{ik}\cdot B_{kj}$. 
+Our goal is to multiply two square matrices $A$ and $B$, each containing $N^2$ elements. Consistently with usual notations, their product $C=A\cdot B$ satisfies $C_{ij} = \sum_{k=0}^{N-1} A_{ik}\cdot B_{kj}$. 
 
-Let's initially consider the simplified scenario in which we have exactly $n^2$ processing elements available. An ideal network for processing the matrices would be a two-dimensional mesh of these $n^2$ processing elements arranged in a grid, with vertical and horizontal interconnections. In the literature we can find it under different names: lattice, $2D$-torus or grid interconnect. 
+Let's initially consider the simplified scenario in which we have exactly $N^2$ processing elements available. An ideal network for processing the matrices would be a two-dimensional mesh of these $N^2$ processing elements arranged in a grid, with vertical and horizontal interconnections. In the literature we can find it under different names: lattice, $2D$-torus or grid interconnect. 
 
 \begin{figure}[h]
 \centering
@@ -634,9 +656,9 @@ Let's initially consider the simplified scenario in which we have exactly $n^2$ 
 
 Toroidal interconnections have been of interest for years. They are a natural choice for many matrix-processing algorithms, have low latency and energy consumption. Their disadvantages include difficult wiring of wrap-around connections and costly communication between distant pairs of processing elements. Cannon's algorithm\cite{cannon} for multiplying matrices with processing elements (PEs) works out nicely.
 
-The goal is to have the processing element $PE_{ij}$ compute $C_{ij}=\sum_{k=0}^{n-1} A_{ik}\cdot B_{kj}$. It would be to unreasonable to assume that the processing elements have efficient random access to the entire matrices. Instead, we need to cleverly move the data around.
+The goal is to have the processing element $PE_{ij}$ compute $C_{ij}=\sum_{k=0}^{N-1} A_{ik}\cdot B_{kj}$. It would be unreasonable to assume that the processing elements have efficient random access to the entire matrices. Instead, we need to cleverly move the data around.
 
-The calculation will be done in $n$ steps. In each of the steps, $PE_{ij}$ will be adding $A_{ik}\cdot B_{kj}$ for some $k$. Crucially, the order of additions for different PEs will not be the same. The key is to use diagonals and permute them appropriately. A good diagram is worth a thousand words of explanation. 
+The calculation will be done in $N$ steps. In each of the steps, $PE_{ij}$ will be adding $A_{ik}\cdot B_{kj}$ for some $k$. Crucially, the order of additions for different PEs will not be the same. The key is to use diagonals and permute them appropriately. A good diagram is worth a thousand words of explanation. 
 
 \begin{equation}
 \begin{bmatrix}
@@ -657,7 +679,7 @@ The calculation will be done in $n$ steps. In each of the steps, $PE_{ij}$ will 
 1 & 2 & 0
 \end{bmatrix}
 \end{equation}
-It is easy to see that $PE_{ij}$ starts by doing the addition for $k=(i+j)$ mod $n$, and between the steps the value increases by one (modulo $n$). The movement described above corresponds to this computation: 
+It is easy to see that $PE_{ij}$ starts by doing the addition for $k=(i+j)$ mod $N$, and between the steps the value increases by one (modulo $N$). The movement described above corresponds to this computation: 
 \begin{equation}
 \resizebox{0.9\hsize}{!}{$
 \begin{bmatrix}
@@ -680,19 +702,18 @@ A_{21} \cdot B_{10} & A_{22} \cdot B_{21} & A_{20} \cdot B_{02}
 $}
 \end{equation}
 
-The movement of data is remarkably simple: between the iterations elements of matrix $A$ move (cyclically) to the left, and the elements of matrix $B$ move upwards. We're ready to present the pseudocode of matrix multiplication algorithm.
-
+The movement of data is remarkably simple: between the iterations elements of matrix $A$ move (cyclically) to the left, and the elements of matrix $B$ move upwards. The pseudocode of the matrix multiplication algorithm is presented in Algorithm \ref{matmulparallel}.
 
 \begin{algorithm}
 \caption{Parallel Matrix Multiplication}\label{matmulparallel}
 \begin{algorithmic}[1]
-\Procedure{CannonMatMul(A, B, n)}{}
+\Procedure{CannonMatMul(A, B, N)}{}
 \For{\textbf{each} processing element $PE_{ij}$ \textbf{concurrently}}
-\State $k \gets (i+j)$ mod $n$
+\State $k \gets (i+j)$ mod $N$
 \State $tempA_{ij} \gets A_{ik}$
 \State $tempB_{ij} \gets B_{kj}$
 \State $C_{ij} \gets tempA_{ij} \cdot tempB_{ij}$
-\For{$step \gets 1$ to $n-1$}
+\For{$step \gets 1$ to $N-1$}
 \State send $tempA_{ij}$ to the left neighbour
 \State send $tempB_{ij}$ to the up neighbour
 \State \Comment{Reminder: send and receive should not be in the same phase!}
@@ -706,14 +727,12 @@ The movement of data is remarkably simple: between the iterations elements of ma
 \end{algorithmic}
 \end{algorithm}
 
-It turns out that if sizes of matrices ($n^2$) are larger than the number of processing elements available (let's call it $p^2$), the same idea still works. It is enough to slice the matrices into $p^2$ submatrices of size approximately $(\frac{n}{p})^2$, and we're done! To deal with edge cases nicely, I have enlarged matrices $A$ and $B$ with $\infty$ values so that $n$ is divisible by $p$.
+It turns out that if sizes of matrices ($N^2$) are larger than the number of processing elements available (let's call it $P^2$), the same idea still works. It is enough to slice the matrices into $P^2$ submatrices of size approximately $(\frac{N}{P})^2$, and we're done! To deal with edge cases nicely, I have enlarged matrices $A$ and $B$ with $\infty$ values so that $N$ is divisible by $P$.
 
 The pseudocode translates directly to the implementation running on the Evaluation Environment. It is implemented in \texttt{CannonMatMul.java}. The algorithm is simple to implement and efficient in terms of moving data around. Its greatest disadvantage is reliance on the grid of processing elements being available - otherwise the movement of data may become quite inefficient.
 
 \section{Parallel Dijkstra's algorithm}
-This section extends the discussion in section 2.3.2 and is concerned with the implementation details of the described ideas. 
-
-Let's recall the pseudocode of SimpleParallelDijkstra.
+This section extends the discussion in section 2.3.2 and is concerned with the implementation details of the described ideas. Let's recall the pseudocode of SimpleParallelDijkstra.
 
 \begin{algorithm}
 \caption{Simple Parallel Dijkstra}\label{pdijkstraagain}
@@ -743,23 +762,22 @@ Let's recall the pseudocode of SimpleParallelDijkstra.
 \end{algorithmic}
 \end{algorithm}
 
-In line $5$ there is a mysterious function $\rm{assign\_nodes\_to\_workers()}$. The authors of \textit{A parallelization of Dijkstra's shortest path algorithm} \cite{dijkstra} suggest a random initialization in order to prove that theoretical bounds occur with high probability. I have initially followed their description, but later decided to examine an improvement which aims to optimize the communication costs. Since it's an improvement to both Dijkstra's and SPFA algorithms, the description follows in section 3.7. For now, a mapping of nodes to workers is chosen uniformly at random for each node. The graph is then partitioned according to this mapping in a node-centric way: each worker knows about the subgraph induced by its nodes.
+In line $5$ there is a mysterious function $\rm{assign\_nodes\_to\_workers()}$. The authors of \textit{`A parallelization of Dijkstra's shortest path algorithm'} \cite{dijkstra} suggest a random initialization in order to prove that theoretical bounds occur with high probability. I have initially followed their description, but later decided to examine an improvement which aims to optimize the communication costs. Since it's an improvement to both Dijkstra's and SPFA algorithms, the description follows in section $3.7$. For now, a mapping of nodes to workers is chosen uniformly at random for each node. The graph is then partitioned according to this mapping in a node-centric way: each worker knows about the subgraph induced by its nodes.
 
 Instead of a maintaining a global priority queue, it is better when each of the workers maintains its own, local priority queue which is going to hold nodes assigned to it sorted by the current distance. This eliminates the need for implementing parallel data structures. Additionally, another priority queue is kept at each node to calculate minimum of the expression $dist[u] + OUT(u)$, where $OUT(u)$ was the minimal weight of an edge going out of $u$. 
 
-The main while loop of the parallel Dijkstra's algorithm works in four phases:
-
+The main while loop of the parallel Dijkstra's algorithm works in four phases:\vspace{-5pt}
 \begin{enumerate}
     \item The cores communicate to find the threshold $L = min(dist[u] + OUT(u))$ among all nodes which are still in the queues. If a core has no nodes in their queue, it can terminate.
     \item Each core removes all the nodes from its queues with the current distance not exceeding $L$. For each of the removed nodes, the final distance is now calculated.
-    \item For each node $u$ of the removed nodes, all edges ($u, v, w$) should be considered for relaxation. It guarantees that $dist[v]$ is at most $dist[u] + w$, which happens if $u$ was the direct predecessor of $w$. This forms a collection of requests of the form ($v, dist[u]+w$) which signal a possible lower bound on the distance. The request ($v$, $d$) is then sent to the core \textit{assigned(v)} in a batch.
-    \item Each core receives the batch of possible updates and processes them similarly to the traditional sequential algorithm: updates the distances and triggers decreaseKey() on the relevant nodes.
+    \item For each node $u$ of the removed nodes, all edges ($u, v, w$) should be considered for relaxation. Applying the relaxation operation guarantees that $dist[v]$ is at most $dist[u] + w$, which happens if $u$ was the direct predecessor of $w$. The relaxations form a collection of requests of the form ($v, dist[u]+w$) which signal a possible lower bound on the distance. The request ($v$, $d$) is then sent to the core \textit{assigned(v)} in a batch.
+    \item Each core receives the batch of possible updates and processes them similarly to the traditional sequential algorithm: updates the distances and triggers \texttt{Q.decreaseKey()} on the relevant nodes.
 \end{enumerate}
 
 The algorithm finishes once all the cores have terminated. Each core has computed shortest distances for the nodes assigned to it. The algorithm, unlike matrix multiplication, does not use any special assumptions about the interconnections between processing elements. However, using special properties of the available network may bring additional benefits.
 
 \section{Parallel SPFA implementation}
-This section is very similar to the previous section, as SPFA and Dijkstra's algorithm have a lot in common. Let's recall the proposed pseudocode of a parallel SPFA.
+This section is very similar to the previous section, as SPFA and Dijkstra's algorithm have a lot in common. Let's recall the proposed pseudocode of a parallel SPFA (Algorithm \ref{pspfa2}).
 
 \begin{algorithm}
 \caption{Parallel SPFA}\label{pspfa2}
@@ -812,20 +830,19 @@ Although choosing the mapping of nodes to processing elements in the function $\
 
 In this section I am describing the optimization for lattice interconnections. It is not obvious that this is going to improve anything - although communication cost may decrease, utilization of processing elements may decrease, too. This is because many workers may be idling as their chunk hasn't started yet or has already finished. 
 
-Real-world road networks downloaded with OSMnx have GPS coordinates associated with them. I have written a short script in \texttt{graphs/graph\_download.ipynb} to add those to the graph format. Using these coordinates, a simple partitioning is performed. Assuming there are $p^2$ processing elements, $p-1$ vertical and $p-1$ horizontal lines are added independently. Along each dimension, after roughly $\frac{n}{p}$ vertices a new line is added, as in the diagram below. Each of the $p^2$ formed regions contains nodes mapped to some processing element.
+Real-world road networks downloaded with OSMnx have GPS coordinates associated with them. I have written a short script in \texttt{graphs/graph\_download.ipynb} to add those to the graph format. Using these coordinates, a simple partitioning is performed. Assuming there are $P^2$ processing elements, $P-1$ vertical and $P-1$ horizontal lines are added independently. Along each dimension, after roughly $\frac{N}{P}$ vertices a new line is added, as in the diagram below. Each of the $P^2$ formed regions contains nodes mapped to some processing element, as shown in figure \ref{mapping}. Usefulness of this modification is measured in the \textit{Evaluation} chapter.
 
 \begin{figure}[ht]
 \centering
 \includegraphics[scale=0.15]{mapping.png}
 \caption{A graph mapped to $9$ workers}
+\label{mapping}
 \end{figure}
-
-Usefulness of this modification is measured in the \textit{Evaluation} chapter.
 
 \section{Testing the code}
 Parallel programs can be difficult to debug, as they can manifest subtle bugs in bizarre ways. In this section I am addressing the difficulties of testing the code for correctness. Performance evaluation follows in the next chapter.
 
-Throughout the project I have been using test-driven development for testing the algorithms. I have prepared the graphs for test runs early on. Each of the algorithms was tested on six small road networks of New York city center. The smallest one had just $3$ nodes and $2$ edges and was useful for verifications on paper - if the issue was major\footnote{Example bug: forgetting to collect the results from processing elements}, it would appear on a testcase easy to follow by hand. The largest of the graphs had $27$ nodes and $64$ edges.
+Throughout the project I have been using test-driven development for testing the algorithms and the evaluation environment. I have prepared the graphs for test runs early on. Each of the algorithms was tested on six small road networks of New York city center. The smallest one had just $3$ nodes and $2$ edges and was useful for verifications on paper - if the issue was major\footnote{Example bug: forgetting to collect the results from processing elements}, it would appear on a testcase easy to follow with a debugger The largest of the graphs had $27$ nodes and $64$ edges.
 
 Each of the algorithms was asked to calculate all pairs of shortest paths for these graphs and verified against the model answer. This model answer was computed with networkX's \texttt{shortest\_path\_length()} function. To account for floating-point errors, results $a$ and $b$ were considered to be equal if $abs(a-b) < \epsilon$. The value of $\epsilon$ was chosen to be $10^{-3}$.
 
@@ -894,10 +911,11 @@ Analyzing even the single--core version of SPFA poses a challenge. I have been a
 When $P$ processors are available, the analysis is even harder and I do not have a definite answer to this question. For moderate $P$ it offers great utilization of processing elements, as they can do useful work as long as their relaxation queues are not empty. This is hard to quantify mathematically; in this case we should proceed to discussing the empirical results.
 
 \section{Methodology: estimations used}
-In section $3.3.7$ I've mentioned that costs of various operations are estimated. The default estimator is a Gaussian estimator which samples the distributions from $\mathcal{N}(\mu, \sigma ^2)$. The following default estimations are used:
+In section $3.3.7$ I've mentioned how costs of various operations are estimated. The default estimator is a Gaussian estimator which samples the distributions from $\mathcal{N}(\mu, \sigma ^2)$. The following default estimations are used:
 
 \begin{itemize}
-    \item Local memory operations: $\mu=0.5$ nanoseconds (ns). \item Binary ALU operations: $\mu=1$ ns (roughly corresponding to two reads)
+    \item Local memory operations: $\mu=0.5$ nanoseconds (ns). 
+    \item Binary ALU operations: $\mu=1$ ns (roughly corresponding to two reads)
     \item Message processing operations: $\mu=3$ ns per packet, at both sender's and receiver's end.
     \item Message propagation delay: $\mu=30$, then the value is multiplied by distance between the sender and receiver.\footnote{measured as number of conections on the shortest path between those}
     \item Priority queue operations: $\mu=10$. This value is chosen to represent the logarithmic factor and large constants which can arise from implementations.
@@ -932,7 +950,7 @@ The results of the simulations show interesting results. Dijkstra's algorithm fa
 \includegraphics[scale=0.37]{execution-50graphs.png}
 \end{figure}
 
-Let's investigate further and look closely at the results for one graph of bigger size. I have chosen $N\approx 500$ as for such $N$ evaluating an algorithm of complexity $O(N^3\cdot log(N))$ (with additional overheads from the simulator) posed a challenge, but was still possible. The computations to produce the data for the plot below took two hours on my machine. The error bars represent plausible standard deviations of $20\%$. Standard deviations calculated with the better approximation from Central Limit Theorem would be too small to be visible. In section $4.6$ I am describing empirical calculations of these standard deviations.
+Let's investigate further and look closely at the results for one graph of bigger size. I have chosen $N\approx 500$ as for such $N$ evaluating an algorithm of complexity $O(N^3\cdot log(N))$ \footnote{with a huge constant factor arising from the simulator's overheads} posed a challenge, but was still possible. The computations to produce the data for the plot below took two hours on my machine. The error bars represent plausible standard deviations of $20\%$. Standard deviations calculated with the better approximation from Central Limit Theorem would be too small to be visible. In section $4.6$ I am describing empirical calculations of these standard deviations.
 
 
 \begin{figure}[h]
@@ -944,7 +962,7 @@ Let's investigate further and look closely at the results for one graph of bigge
 The trend is clear, parallelization of Dijkstra's algorithm does not perform comparably well. SPFA offers a good parallelization, but inevitably exhibits a diminishing returns phenomenon. The graph's diameter poses a lower bound, as it needs to be processed sequentially. That diameter can be quite large in the real-world road networks, which may contribute to the lack of improvement for greater values of $P$. Increasing the number of available processing elements would only decrease the execution time as communication cost would increase. Altogether, I would recommend implementing MatMul only if there is a need to compute all-pairs shortest paths and there is a large grid of processing elements available. In all other cases SPFA looks like a top choice.
 
 \section{Energy efficiency}
-Although speed of algorithms is important, it is also important that they do not require too much energy. All three algorithms achieve the same results, but do so performing different amount of work overall. Let's look at the relative merits. The data for the plot below is collected by summing the estimates of work performed by cores rather than taking the maximum value among the cores. 
+Although speed of algorithms is important, it is also important that they do not require too much energy. All three algorithms achieve the same results, but do so performing different amount of work overall. Let's look at the relative merits. The data for the plot below is collected by summing the estimates of work performed by cores rather than taking the maximum value among the cores. These include the costs associated with passing a message around, they evenly contribute to the sender's and receiver's work.
 
 \begin{figure}[h]
 \includegraphics[scale=0.45]{work-50graphs.png}
@@ -960,7 +978,7 @@ Interestingly, the lines have switched places now: the $8$x$8$ processing grids 
 It looks as though SPFA was the most work--efficient of all three algorithms used. This result is slightly surprising to me -- I was expecting parallel Dijkstra's algorithm to perform less work overall, as it never relaxes a vertex twice.
 
 \section{Investigating the optimization for communication costs}
-In section $3.7$ I have defined an optimization which aims to improve the throughput and minimize communication costs. Before claiming any credit I need to quantify if it caused  improvement. The plots describing the behaviour are voluminous, so I have placed them in Appendix B. The main insight from them is that the algorithms perform quite similarly, regardless of whether the optimization was used or not. There is also some noticeable improvement, but not in all scenarios. Is it sufficient to be statistically significant?
+In section $3.7$ I have defined an optimization which aims to improve the throughput and minimize communication costs. Before claiming any credit I need to quantify whether this constituted an improvement indeed. The plots describing the behaviour are voluminous, so I have placed them in Appendix B. The main insight from them is that the algorithms perform quite similarly, regardless of whether the optimization was used or not. There is also some noticeable improvement, but not in all scenarios. Is it sufficient to be statistically significant?
 
 I have formulated a Null Hypothesis that the non--speedup versions perform no worse than the supposedly better versions of the algorithms. I have compared the results reported on the same test instances and found the following $p$--values on the binomial statistical test:
 
@@ -973,7 +991,7 @@ I have formulated a Null Hypothesis that the non--speedup versions perform no wo
 \end{tabular}
 \end{center}
 
-The optimization proposed decreases communication cost which then improves on the total work performed by both algorithms. Execution time of SPFA is also improved, but for Dijkstra's algorithm the results are most likely due to random noise in the data.
+The optimization proposed decreases the communication cost which then improves on the total work performed by both algorithms. Execution time of SPFA is also improved, but for Dijkstra's algorithm the results are most likely due to random noise in the data.
 
 \section{Comparison of single--source algorithms}
 Dijkstra's algorithm and SPFA can process much larger graphs quickly if we do not require calculations of shortest paths between all pairs of vertices. Thus, for a complete comparison we need to also check if large graphs reverse the trends we've seen previously. I have downloaded the entire road networks of Cambridge, Szczecin\footnote{my home city, roughly $400K$ inhabitants}, Rome and London. I have picked $5$ random locations and used the SSSP algorithms to calculate distances from those locations, then averaged the results to report a score for a particular graph.
@@ -997,14 +1015,22 @@ Additionally, the single--source experiments verify that optimizing the communic
 The measurements for total work performed are a bit confusing. As more cores are involved, SPFA performs less and less work! The phenomenon repeatedly arises on the largest test instances. One explanation which I came up with was an insidious bug in the simulator which only manifests on very large graphs. I don't see a convincing reason why such a bug would manifest only on large graphs. The question remains open. 
 
 \section{Sensitivity analysis}
-In this chapter I'm going to perform perturbations of various parameters and calculate how the results change to be able to confidently report results.
+Although the constants described in section $4.2$ were chosen to reflect a possible real--life scenario, an inquisitive reader may wonder what would happen if they were different and how important the choices are. In this section I am describing plausible answers to this question.
+
+I've started the analysis by measuring means and standard deviations of the reported results over $10$ independent runs on the case test instance, and calculated the relative standard deviations. These coefficients did not exceed $0.0015$, as the analysis in section $4.2$ predicted.
+
+What would happen if I used different constant for the parameters? To answer this question, I needed to determine the impact certain operations have on the final measurements. Initially I wanted to create a matrix of partial derivatives whose entries calculate how much a given result changes when one of my constants is perturbed by a small amount. Unfortunately, it would be computationally expensive to produce a detailed result of this kind, so I needed to seek for a good approximation. The standard deviations were proven to be small, so the total measurement could be reasonably approximated with a linear function. This meant that I could calculate the contributions as fractions of the final result.
+
+Let's denote $C_i$ as the cumulative costs of the $i$--th operation, for example of all performed memory reads, and $T_i$ as the total cost but \textbf{without} taking the $i$--th operation into account. If the unit cost of a memory read becomes $x$ times larger, the contribution of memory reads becomes $\frac{C_i\cdot x}{T_i + C_i\cdot x}$ instead of $\frac{C_i}{T_i}$, which can be calculated easily to answer any hypothetical questions.
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Conclusion}
+\chapter{Conclusions}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-How much algorithm redesign is needed for parallel architectures? To phrase it concisely: a lot. In my project I have studied various approaches to the shortest path problem to compare their relative merits. My results show that the most appropriate algorithm may depend on many factors: the number of processing elements available, the size of the problem instance, the costs of communication between workers, and more. 
+How much algorithm redesign is needed for parallel architectures? To phrase it concisely: a lot. In my project I have studied various approaches to the shortest path problem to compare their relative merits. My results show that the most appropriate algorithm may depend on many factors: the number of processing elements available, the size of the problem instance, the costs of communication between workers, and more. For example a matrix multiplication algorithm, inefficient in sequential environment, may be the best choice if there is a very large number of processing elements available.
 
-In my work I have considered the SPFA algorithm which has not been evaluated in the context of parallel algorithms before. The results surpassed my expectations: Parallel~SPFA is a~fast and work--efficient parallel algorithm which consistently outperforms the parallel adaptation of its sequential cousin - Dijkstra's algorithm. Having analysed the two, I have concluded that algorithms which require strong sequential consistency requirements are inappropriate for parallel environments - maintaining those is a waste of time and energy.
+In my work I have considered the SPFA algorithm which, to my knowledge, has never been evaluated in the context of parallel algorithms before. The results surpassed my expectations: Parallel~SPFA is a~fast and work--efficient parallel algorithm which consistently outperforms the parallel adaptation of its sequential cousin - Dijkstra's algorithm. Having analysed the two, I have concluded that algorithms which require strong sequential consistency requirements are inappropriate for parallel environments - maintaining those is a waste of time and energy.
 
 \section{Success criteria}
 All the success criteria of my project have been met. I have implemented a test bench for parallel algorithms and tested three different parallel algorithms using this framework. Graphs acquired using the OSMnx library were used to evaluate the implementations in terms of execution time and total work performed. Although the success criteria did not promise anything in terms of performance, I am proud to conclude that my parallelization of the Shortest Path Faster Algorithm led to the most efficient algorithm overall.
@@ -1013,7 +1039,7 @@ All the success criteria of my project have been met. I have implemented a test 
 This project made me realize how incredibly rich the field of parallel algorithms is. They are far more challenging and relevant to modern computing than the traditional sequential algorithms. I have underestimated the time needed to design and implement good, modular software -- matching the simulator milestones on schedule proved impossible. If I had to redo the project, I would also include \textit{`Evaluation using cloud facilities'} among the success criteria, to save myself waiting many hours for the evaluation results and to enable more comprehensive evaluation on larger graphs.
 
 \section{Future work}
-The area of parallel algorithms is a broad field which cannot be explored in too much detail during a Part II Project. In my opinion, the most exciting future work would build on the success of SPFA in this project and try to apply similar chaotic relaxation techniques in the topic of automatic parallelization of programs. A study on the usefulness of such transformations could be of great interest to general public. 
+The area of parallel algorithms is a broad field which cannot be explored in too much detail during a Part II Project. In my opinion, the most exciting future work would build on the success of SPFA in this project and try to apply similar chaotic relaxation techniques in the topic of automatic parallelization of programs. A study on the usefulness of such transformations could be of great interest to general community. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % the bibliography
@@ -1022,8 +1048,7 @@ The area of parallel algorithms is a broad field which cannot be explored in too
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % the appendices
-\appendix
-
+\begin{appendices}
 \chapter{Detailed repository overview diagram}
 \dirtree{%
 .1 route-planning.
@@ -1121,8 +1146,9 @@ The area of parallel algorithms is a broad field which cannot be explored in too
 %\section{refs.bib}
 %{\scriptsize\verbatiminput{refs.bib}}
 
-\chapter{Project Proposal}
-
+\end{appendices}
+\addcontentsline{toc}{chapter}{Project Proposal}
+\chapter*{Project Proposal}
 %\input{proposal}
 
 \end{document}

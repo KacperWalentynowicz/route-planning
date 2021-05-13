@@ -132,6 +132,6 @@ public class SPFA extends SSPolicy {
         env.runPhase(finish);
 
         env.finishEvaluation();
-        return env.getTracker().getTotalTime();
+        return env.getTracker().getMetrics();
     }
 }

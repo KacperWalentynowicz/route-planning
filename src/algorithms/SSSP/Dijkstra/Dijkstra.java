@@ -206,6 +206,6 @@ public class Dijkstra extends SSPolicy {
         env.finishEvaluation();
 
         //System.out.printf("%d %d\n", g.N, no_phases);
-        return env.getTracker().getTotalTime();
+        return env.getTracker().getMetrics();
     }
 }
